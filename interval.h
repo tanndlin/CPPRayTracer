@@ -9,7 +9,13 @@ class interval {
 
     interval() : min(+infinity), max(-infinity) {}  // Default interval is empty
 
-    interval(double min, double max) : min(min), max(max) {}
+    interval(double min, double max) : min(min), max(max) {
+        if (min > max) {
+            double temp = max;
+            max = min;
+            min = temp;
+        }
+    }
 
     double size() const {
         return max - min;
@@ -21,6 +27,10 @@ class interval {
 
     bool surrounds(double x) const {
         return min < x && x < max;
+    }
+
+    bool surrounds(interval i) const {
+        return min < i.min && max > i.max;
     }
 
     double clamp(double x) const {

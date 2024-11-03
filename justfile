@@ -9,3 +9,6 @@ image:
 
 watch:
     nodemon -e cpp,h -x "just image"
+
+watch-build:
+    nodemon -e cpp,h -x "just build"

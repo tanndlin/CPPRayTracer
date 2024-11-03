@@ -38,6 +38,13 @@ class sphere : public hittable {
         return true;
     }
 
+    bounding_box get_bounds() const override {
+        point3 neg = point3(center.x() - radius, center.y() - radius, center.z() - radius);
+        point3 pos = point3(center.x() + radius, center.y() + radius, center.z() + radius);
+
+        return bounding_box(neg, pos);
+    }
+
    private:
     point3 center;
     double radius;
