@@ -1,11 +1,11 @@
 set shell := ["cmd.exe", "/c"]
 
 build:
-    g++ graphics.cpp -o graphics
+    g++ main.cpp -o main
 
 image:
     just build
-    graphics.exe > image.ppm
+    main.exe > image.ppm
 
 watch:
     nodemon -e cpp,h -x "just image"
