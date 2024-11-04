@@ -27,6 +27,11 @@ class hittable {
     virtual ~hittable() = default;
     virtual bool hit(const ray& r, interval ray_t, hit_record& rec) const = 0;
     virtual bounding_box get_bounds() const = 0;
+    virtual bool contained_by(bounding_box box) const = 0;
+    bool partially_contained_by(bounding_box box) const {
+        auto bounds = get_bounds();
+        return bounds.overlaps(box);
+    }
 };
 
 #endif

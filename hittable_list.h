@@ -11,7 +11,7 @@ class hittable_list : public hittable {
    public:
     std::vector<shared_ptr<hittable>> objects;
 
-    hittable_list() {}
+    hittable_list() : objects() {}
     hittable_list(shared_ptr<hittable> object) { add(object); }
 
     void clear() { objects.clear(); }
@@ -42,6 +42,14 @@ class hittable_list : public hittable {
             box.expand_to_contain(object->get_bounds());
 
         return box;
+    }
+
+    bool contained_by(bounding_box box) const override {
+        for (const auto& object : objects)
+            if (!object->contained_by(box))
+                return false;
+
+        return true;
     }
 };
 

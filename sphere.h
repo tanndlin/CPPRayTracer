@@ -45,6 +45,13 @@ class sphere : public hittable {
         return bounding_box(neg, pos);
     }
 
+    bool contained_by(bounding_box box) const override {
+        point3 neg = point3(center.x() - radius, center.y() - radius, center.z() - radius);
+        point3 pos = point3(center.x() + radius, center.y() + radius, center.z() + radius);
+
+        return box.contains(neg) && box.contains(pos);
+    }
+
    private:
     point3 center;
     double radius;
