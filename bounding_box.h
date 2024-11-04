@@ -73,6 +73,9 @@ class bounding_box {
         else
             return 1;
     }
+
+    bool hit(const ray& r, interval ray_t) const {
+        }
 };
 
 #endif

@@ -24,6 +24,23 @@ class node {
     std::unique_ptr<node> childA;
     std::unique_ptr<node> childB;
 
+    bool hit(const ray& r, interval ray_t, hit_record& rec) const {
+        if (childA)
+            if (childA->hit(r, ray_t, rec))
+                return true;
+
+        if (childB)
+            if (childB->hit(r, ray_t, rec))
+                return true;
+
+        // If no children nodes, check if the hittable list is hit
+        if (bounds.hit(r, ray_t))
+            if (children.hit(r, ray_t, rec))
+                return true;
+
+        return false;
+    }
+
    private:
     void split() {
         // Find longest axis

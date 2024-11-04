@@ -52,7 +52,7 @@ int main() {
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
-    node world_node = node(world);
+    const node world_node = node(world);
 
     camera cam;
 
@@ -69,5 +69,5 @@ int main() {
     cam.defocus_angle = 0.6;
     cam.focus_dist = 10.0;
 
-    cam.render(world);
+    cam.render(world_node);
 }
