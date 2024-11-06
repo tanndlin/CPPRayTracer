@@ -49,14 +49,14 @@ class node {
         if (childA || childB)
             return hit_anything;
 
-        // bool hitChildren = children.hit(r, ray_t, rec);
-        // if (hitChildren)
-        //     return true;
-
-        if (bounds.hit(r)) {
-            rec.mat = make_shared<lambertian>(color(255, 0, 0));
+        bool hitChildren = children.hit(r, ray_t, rec);
+        if (hitChildren)
             return true;
-        }
+
+        // if (bounds.hit(r)) {
+        //     rec.mat = make_shared<lambertian>(color(1, 0, 1));
+        //     return true;
+        // }
 
         return false;
     }

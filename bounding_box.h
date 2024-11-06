@@ -72,7 +72,6 @@ class bounding_box {
     }
 
     bool hit(const ray& r) const {
-        // Triangulate the box into 12 triangles and check if the ray intersects any of them
         // Bottom face CCW
         point3 a = point3(min.x(), min.y(), max.z());
         point3 b = point3(max.x(), min.y(), max.z());
@@ -85,30 +84,113 @@ class bounding_box {
         point3 g = point3(min.x(), max.y(), min.z());
         point3 h = point3(max.x(), max.y(), min.z());
 
-        // Check if the ray intersects any of the triangles
-        // Bottom face
-        if (RayHitsTri(r, c, b, a) || RayHitsTri(r, a, d, c))
-            return true;
+        point3 bottomFace[4] = {a, b, c, d};
+        point3 topFace[4] = {e, f, g, h};
+        point3 maxZFace[4] = {a, b, f, e};
+        point3 minZFace[4] = {c, d, h, g};
+        point3 maxXFace[4] = {b, c, g, f};
+        point3 minXFace[4] = {d, h, e, a};
 
-        // Top face
-        if (RayHitsTri(r, e, f, g) || RayHitsTri(r, e, g, h))
-            return true;
+        // Get normals
+        vec3 bottomNormal = cross(a - b, c - a);
+        vec3 topNormal = cross(f - e, g - e);
+        vec3 maxZNormal = cross(a - f, b - a);
+        vec3 minZNormal = cross(d - c, g - c);
+        vec3 maxXNormal = cross(f - b, b - g);
+        vec3 minXNormal = cross(e - a, d - a);
 
-        // Max Z face
-        if (RayHitsTri(r, a, b, f) || RayHitsTri(r, a, f, e))
-            return true;
+        // There are 3 faces that the ray can see
+        // The dot product of the ray direction and the normal of the face will be negative
+        // if the ray is facing the face
+        if (dot(r.direction(), bottomNormal)) {
+            // Calc how far the ray is from the face
+            double targetY = bottomFace[0].y();
+            double t = (targetY - r.origin().y()) / r.direction().y();
+            point3 target = r.at(t);
+            // Check if target is within the face
+            double minX = std::fmin(bottomFace[0].x(), bottomFace[1].x());
+            double maxX = std::fmax(bottomFace[0].x(), bottomFace[1].x());
+            double minZ = std::fmin(bottomFace[0].z(), bottomFace[2].z());
+            double maxZ = std::fmax(bottomFace[0].z(), bottomFace[2].z());
+            if (target.x() >= minX && target.x() <= maxX && target.z() >= minZ && target.z() <= maxZ) {
+                return true;
+            }
+        }
 
-        // Min Z face
-        if (RayHitsTri(r, c, d, h) || RayHitsTri(r, c, h, g))
-            return true;
+        if (dot(r.direction(), topNormal)) {
+            // Calc how far the ray is from the face
+            double targetY = topFace[0].y();
+            double t = (targetY - r.origin().y()) / r.direction().y();
+            point3 target = r.at(t);
+            // Check if target is within the face
+            double minX = std::fmin(topFace[0].x(), topFace[1].x());
+            double maxX = std::fmax(topFace[0].x(), topFace[1].x());
+            double minZ = std::fmin(topFace[0].z(), topFace[2].z());
+            double maxZ = std::fmax(topFace[0].z(), topFace[2].z());
+            if (target.x() >= minX && target.x() <= maxX && target.z() >= minZ && target.z() <= maxZ) {
+                return true;
+            }
+        }
 
-        // Max X face
-        if (RayHitsTri(r, b, c, g) || RayHitsTri(r, b, g, f))
-            return true;
+        if (dot(r.direction(), maxZNormal)) {
+            // Calc how far the ray is from the face
+            double targetZ = maxZFace[0].z();
+            double t = (targetZ - r.origin().z()) / r.direction().z();
+            point3 target = r.at(t);
+            // Check if target is within the face
+            double minX = std::fmin(maxZFace[0].x(), maxZFace[1].x());
+            double maxX = std::fmax(maxZFace[0].x(), maxZFace[1].x());
+            double minY = std::fmin(maxZFace[0].y(), maxZFace[2].y());
+            double maxY = std::fmax(maxZFace[0].y(), maxZFace[2].y());
+            if (target.x() >= minX && target.x() <= maxX && target.y() >= minY && target.y() <= maxY) {
+                return true;
+            }
+        }
 
-        // Min X face
-        if (RayHitsTri(r, a, e, h) || RayHitsTri(r, a, h, d))
-            return true;
+        if (dot(r.direction(), minZNormal)) {
+            // Calc how far the ray is from the face
+            double targetZ = minZFace[0].z();
+            double t = (targetZ - r.origin().z()) / r.direction().z();
+            point3 target = r.at(t);
+            // Check if target is within the face
+            double minX = std::fmin(minZFace[0].x(), minZFace[1].x());
+            double maxX = std::fmax(minZFace[0].x(), minZFace[1].x());
+            double minY = std::fmin(minZFace[0].y(), minZFace[2].y());
+            double maxY = std::fmax(minZFace[0].y(), minZFace[2].y());
+            if (target.x() >= minX && target.x() <= maxX && target.y() >= minY && target.y() <= maxY) {
+                return true;
+            }
+        }
+
+        if (dot(r.direction(), maxXNormal)) {
+            // Calc how far the ray is from the face
+            double targetX = maxXFace[0].x();
+            double t = (targetX - r.origin().x()) / r.direction().x();
+            point3 target = r.at(t);
+            // Check if target is within the face
+            double minY = std::fmin(maxXFace[0].y(), maxXFace[2].y());
+            double maxY = std::fmax(maxXFace[0].y(), maxXFace[2].y());
+            double minZ = std::fmin(maxXFace[0].z(), maxXFace[1].z());
+            double maxZ = std::fmax(maxXFace[0].z(), maxXFace[1].z());
+            if (target.y() >= minY && target.y() <= maxY && target.z() >= minZ && target.z() <= maxZ) {
+                return true;
+            }
+        }
+
+        if (dot(r.direction(), minXNormal)) {
+            // Calc how far the ray is from the face
+            double targetX = minXFace[0].x();
+            double t = (targetX - r.origin().x()) / r.direction().x();
+            point3 target = r.at(t);
+            // Check if target is within the face
+            double minY = std::fmin(minXFace[0].y(), minXFace[2].y());
+            double maxY = std::fmax(minXFace[0].y(), minXFace[2].y());
+            double minZ = std::fmin(minXFace[0].z(), minXFace[1].z());
+            double maxZ = std::fmax(minXFace[0].z(), minXFace[1].z());
+            if (target.y() >= minY && target.y() <= maxY && target.z() >= minZ && target.z() <= maxZ) {
+                return true;
+            }
+        }
 
         return false;
     }
