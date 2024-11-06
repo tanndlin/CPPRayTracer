@@ -43,14 +43,6 @@ class hittable_list : public hittable {
 
         return box;
     }
-
-    bool contained_by(bounding_box box) const override {
-        for (const auto& object : objects)
-            if (!object->contained_by(box))
-                return false;
-
-        return true;
-    }
 };
 
 #endif

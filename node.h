@@ -10,13 +10,21 @@
 
 class node {
    public:
-    node(hittable_list children, bounding_box bounds) : bounds(bounds), children(children) {
-        if (this->children.objects.size() > 2)
+    node(hittable_list children, int splitDepth) : bounds(children.get_bounds()), children(children), splitDepth(splitDepth) {
+        childA = NULL;
+        childB = NULL;
+        if (this->children.objects.size() > 1 && splitDepth < MAX_SPLIT_DEPTH)
             split();
-    }
-    node(hittable_list children) : bounds(children.get_bounds()), children(children) {
-        if (this->children.objects.size() > 2)
-            split();
+
+        int total = 0;
+        if (childA)
+            total += childA->children.objects.size();
+        if (childB)
+            total += childB->children.objects.size();
+        if ((childA || childB) && total != children.objects.size()) {
+            std::cerr << "Splitting failed. Found " << total << " objects, expected " << children.objects.size() << std::endl;
+            exit(1);
+        }
     }
 
     bounding_box bounds;
@@ -25,66 +33,56 @@ class node {
     std::unique_ptr<node> childB;
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const {
-        if (childA)
-            if (childA->hit(r, ray_t, rec))
-                return true;
+        if (!bounds.hit(r))
+            return false;
 
-        if (childB)
-            if (childB->hit(r, ray_t, rec))
-                return true;
+        bool hit_anything = false;
+        double closest_so_far = ray_t.max;
+        if (childA && childA->hit(r, ray_t, rec)) {
+            hit_anything = true;
+            closest_so_far = rec.t;
+        }
 
-        // If no children nodes, check if the hittable list is hit
-        if (bounds.hit(r, ray_t))
-            if (children.hit(r, ray_t, rec))
-                return true;
+        if (childB && childB->hit(r, interval(ray_t.min, closest_so_far), rec))
+            hit_anything = true;
+
+        if (childA || childB)
+            return hit_anything;
+
+        // bool hitChildren = children.hit(r, ray_t, rec);
+        // if (hitChildren)
+        //     return true;
+
+        if (bounds.hit(r)) {
+            rec.mat = make_shared<lambertian>(color(255, 0, 0));
+            return true;
+        }
 
         return false;
     }
 
    private:
+    static const int MAX_SPLIT_DEPTH = 10;
+    int splitDepth = 0;
     void split() {
         // Find longest axis
         int longestAxis = bounds.get_longest_axis();
-        bounding_box aBounds;
-        bounding_box bBounds;
-        // X axis
-        if (longestAxis == -1) {
-            double midpoint = (bounds.a.x() + bounds.b.x()) / 2;
-            // Keep a where it is, move b to new midpoint
-            aBounds = bounding_box(bounds.a, point3(midpoint, bounds.b.y(), bounds.b.z()));
-            // Keep b where it is, move a to new midpoint
-            bBounds = bounding_box(point3(midpoint, bounds.a.y(), bounds.a.z()), bounds.b);
-        } else if (longestAxis == 0) {  // Y axis
-            double midpoint = (bounds.a.y() + bounds.b.y()) / 2;
-            // Keep a where it is, move b to new midpoint
-            aBounds = bounding_box(bounds.a, point3(bounds.b.x(), midpoint, bounds.b.z()));
-            // Keep b where it is, move a to new midpoint
-            bBounds = bounding_box(point3(bounds.a.x(), midpoint, bounds.a.z()), bounds.b);
-        } else if (longestAxis == 1) {  // Z axis
-            double midpoint = (bounds.a.z() + bounds.b.z()) / 2;
-            // Keep a where it is, move b to new midpoint
-            aBounds = bounding_box(bounds.a, point3(bounds.b.x(), bounds.b.y(), midpoint));
-            // Keep b where it is, move a to new midpoint
-            bBounds = bounding_box(point3(bounds.a.x(), bounds.a.y(), midpoint), bounds.b);
-        }
+        double splitPoint = (bounds.min.e[longestAxis] + bounds.max.e[longestAxis]) / 2;
 
         hittable_list aList = hittable_list();
         hittable_list bList = hittable_list();
         for (const auto& object : children.objects) {
-            if (object->partially_contained_by(aBounds)) {
+            point3 center = object->center;
+            if (center.e[longestAxis] < splitPoint)
                 aList.add(object);
-            } else if (object->partially_contained_by(bBounds)) {
+            else
                 bList.add(object);
-            } else {
-                std::cerr << "Object was somehow not covered by either split box" << std::endl;
-                exit(1);
-            }
         }
 
         if (aList.objects.size() > 0)
-            childA = std::make_unique<node>(aList, aBounds);
+            childA = std::make_unique<node>(aList, splitDepth + 1);
         if (bList.objects.size() > 0)
-            childB = std::make_unique<node>(bList, bBounds);
+            childB = std::make_unique<node>(bList, splitDepth + 1);
     }
 };
 

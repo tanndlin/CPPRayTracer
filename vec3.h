@@ -24,7 +24,7 @@ class vec3 {
     }
 
     void setZ(double z) {
-        e[1] = z;
+        e[2] = z;
     }
 
     vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }

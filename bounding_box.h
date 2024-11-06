@@ -3,79 +3,115 @@
 
 #include "hittable.h"
 #include "rtweekend.h"
+#include "util.h"
 
 class bounding_box {
    public:
-    point3 a;
-    point3 b;
+    point3 min;
+    point3 max;
 
-    bounding_box() : a(point3()), b(point3()) {}
-    bounding_box(const point3 a, const point3 b) : a(a), b(b) {}
+    bounding_box() : min(point3()), max(point3()) {}
+    bounding_box(point3 a, point3 b) : min(a), max(b) {
+        // Make sure a is the minimum point and b is the maximum point
+        if (min.x() > max.x()) {
+            double temp = min.x();
+            min.setX(max.x());
+            max.setX(temp);
+        }
+
+        if (min.y() > max.y()) {
+            double temp = min.y();
+            min.setY(max.y());
+            max.setY(temp);
+        }
+
+        if (min.z() > max.z()) {
+            double temp = min.z();
+            min.setZ(max.z());
+            max.setZ(temp);
+        }
+    }
 
     bool contains(point3 p) {
-        auto xInterval = interval(a.x(), b.x());
-        auto yInterval = interval(a.y(), b.y());
-        auto zInterval = interval(a.z(), b.z());
+        auto xInterval = interval(min.x(), max.x());
+        auto yInterval = interval(min.y(), max.y());
+        auto zInterval = interval(min.z(), max.z());
 
-        return xInterval.surrounds(p.x()) && yInterval.surrounds(p.y()) && zInterval.surrounds(p.z());
+        return xInterval.contains(p.x()) && yInterval.contains(p.y()) && zInterval.contains(p.z());
     }
 
     bool overlaps(bounding_box other) {
-        bool overlapsX = std::min(a.x(), b.x()) < std::max(other.a.x(), other.b.x()) && std::max(a.x(), b.x()) > std::min(other.a.x(), other.b.x());
-        bool overlapsY = std::min(a.y(), b.y()) < std::max(other.a.y(), other.b.y()) && std::max(a.y(), b.y()) > std::min(other.a.y(), other.b.y());
-        bool overlapsZ = std::min(a.z(), b.z()) < std::max(other.a.z(), other.b.z()) && std::max(a.z(), b.z()) > std::min(other.a.z(), other.b.z());
+        bool overlapsX = min.x() <= other.max.x() && max.x() >= other.min.x();
+        bool overlapsY = min.y() <= other.max.y() && max.y() >= other.min.y();
+        bool overlapsZ = min.z() <= other.max.z() && max.z() >= other.min.z();
 
         return overlapsX && overlapsY && overlapsZ;
     }
 
-    // TODO: There has to be a less verbose way
     void expand_to_contain(bounding_box other) {
-        point3* lowestX = a.x() < b.x() ? &a : &b;
-        double otherLowestX = std::min(other.a.x(), other.b.x());
-        if (lowestX->x() > otherLowestX)
-            lowestX->setX(otherLowestX);
+        min.setX(std::fmin(min.x(), other.min.x()));
+        min.setY(std::fmin(min.y(), other.min.y()));
+        min.setZ(std::fmin(min.z(), other.min.z()));
 
-        point3* highestX = a.x() > b.x() ? &a : &b;
-        double otherHighestX = std::max(other.a.x(), other.b.x());
-        if (highestX->x() < otherHighestX)
-            highestX->setX(otherHighestX);
-
-        point3* lowestY = a.y() < b.y() ? &a : &b;
-        double otherLowesty = std::min(other.a.y(), other.b.y());
-        if (lowestY->y() > otherLowesty)
-            lowestY->setY(otherLowesty);
-
-        point3* highestY = a.y() > b.y() ? &a : &b;
-        double otherHighestY = std::max(other.a.y(), other.b.y());
-        if (highestY->y() < otherHighestY)
-            highestY->setY(otherHighestY);
-
-        point3* lowestZ = a.z() < b.z() ? &a : &b;
-        double otherLowestZ = std::min(other.a.z(), other.b.z());
-        if (lowestZ->z() > otherLowestZ)
-            lowestZ->setZ(otherLowestZ);
-
-        point3* highestZ = a.z() > b.z() ? &a : &b;
-        double otherHighestZ = std::max(other.a.z(), other.b.z());
-        if (highestZ->z() < otherHighestZ)
-            highestZ->setZ(otherHighestZ);
+        max.setX(std::fmax(max.x(), other.max.x()));
+        max.setY(std::fmax(max.y(), other.max.y()));
+        max.setZ(std::fmax(max.z(), other.max.z()));
     }
 
     int get_longest_axis() {
-        double xDist = std::abs(a.x() - b.x());
-        double yDist = std::abs(a.y() - b.y());
-        double zDist = std::abs(a.z() - b.z());
+        double xDist = max.x() - min.x();
+        double yDist = max.y() - min.y();
+        double zDist = max.z() - min.z();
 
         if (xDist > yDist && xDist > zDist)
-            return -1;
-        else if (yDist > xDist && yDist > zDist)
             return 0;
-        else
+        else if (yDist > xDist && yDist > zDist)
             return 1;
+
+        return 2;
     }
 
-    bool hit(const ray& r, interval ray_t) const {
-        }
+    bool hit(const ray& r) const {
+        // Triangulate the box into 12 triangles and check if the ray intersects any of them
+        // Bottom face CCW
+        point3 a = point3(min.x(), min.y(), max.z());
+        point3 b = point3(max.x(), min.y(), max.z());
+        point3 c = point3(min.x(), min.y(), min.z());
+        point3 d = min;
+
+        // Top face CCW... E is on top of A
+        point3 e = point3(min.x(), max.y(), max.z());
+        point3 f = max;
+        point3 g = point3(min.x(), max.y(), min.z());
+        point3 h = point3(max.x(), max.y(), min.z());
+
+        // Check if the ray intersects any of the triangles
+        // Bottom face
+        if (RayHitsTri(r, c, b, a) || RayHitsTri(r, a, d, c))
+            return true;
+
+        // Top face
+        if (RayHitsTri(r, e, f, g) || RayHitsTri(r, e, g, h))
+            return true;
+
+        // Max Z face
+        if (RayHitsTri(r, a, b, f) || RayHitsTri(r, a, f, e))
+            return true;
+
+        // Min Z face
+        if (RayHitsTri(r, c, d, h) || RayHitsTri(r, c, h, g))
+            return true;
+
+        // Max X face
+        if (RayHitsTri(r, b, c, g) || RayHitsTri(r, b, g, f))
+            return true;
+
+        // Min X face
+        if (RayHitsTri(r, a, e, h) || RayHitsTri(r, a, h, d))
+            return true;
+
+        return false;
+    }
 };
 
 #endif
