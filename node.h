@@ -16,15 +16,7 @@ class node {
         if (this->children.objects.size() > 1 && splitDepth < MAX_SPLIT_DEPTH)
             split();
 
-        int total = 0;
-        if (childA)
-            total += childA->children.objects.size();
-        if (childB)
-            total += childB->children.objects.size();
-        if ((childA || childB) && total != children.objects.size()) {
-            std::cerr << "Splitting failed. Found " << total << " objects, expected " << children.objects.size() << std::endl;
-            exit(1);
-        }
+        bounds.calc_points();
     }
 
     bounding_box bounds;
