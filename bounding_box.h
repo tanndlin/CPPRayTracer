@@ -82,6 +82,13 @@ class bounding_box {
         return 2;
     }
 
+    void offset(vec3 offset) {
+        min += offset;
+        max += offset;
+
+        calc_points();
+    }
+
     bool hit(const ray& r) const {
         // There are 3 faces that the ray can see
         // The dot product of the ray direction and the normal of the face will be negative

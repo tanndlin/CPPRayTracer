@@ -42,17 +42,12 @@ class mesh : public hittable {
         point3 oldPos = origin;
         origin = p;
         point3 offset = origin - oldPos;
-        // Move all triangles to the new origin
-        for (auto& tri : bvh.children.objects) {
-            tri->move_origin(offset);
-        }
+
+        bvh.move_origin(offset);
     }
 
     void move_origin(const vec3& offset) override {
-        origin += offset;
-        for (auto& tri : bvh.children.objects) {
-            tri->move_origin(offset);
-        }
+        bvh.move_origin(offset);
     }
 
    private:

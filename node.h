@@ -17,6 +17,7 @@ class node {
 
         childA = NULL;
         childB = NULL;
+        bounds = children.get_bounds();
         if (this->children.objects.size() > 1)
             split();
 
@@ -56,8 +57,19 @@ class node {
 
         return children.hit(r, ray_t, rec);
 
+        if (children.hit(r, ray_t, rec)) return true;
         rec.mat = make_shared<lambertian>(color(1, 0, 1));
         return true;
+    }
+
+    void move_origin(vec3 offset) {
+        bounds.offset(offset);
+
+        if (childA) childA->move_origin(offset);
+        if (childB) childB->move_origin(offset);
+
+        if (!childA && !childB)
+            children.move_origin(offset);
     }
 
    private:
@@ -78,10 +90,12 @@ class node {
                 bList.add(object);
         }
 
-        if (aList.objects.size() > 0)
-            childA = std::make_unique<node>(aList, splitDepth + 1);
-        if (bList.objects.size() > 0)
-            childB = std::make_unique<node>(bList, splitDepth + 1);
+        // All nodes were in one child, this was not a useful split
+        if (aList.objects.size() == 0 || bList.objects.size() == 0)
+            return;
+
+        childA = std::make_unique<node>(aList, splitDepth + 1);
+        childB = std::make_unique<node>(bList, splitDepth + 1);
     }
 };
 
