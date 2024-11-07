@@ -23,7 +23,7 @@ void handleVertex(std::vector<point3>& vertices, const std::string& line) {
     vertices.push_back(point3(x, y, z));
 }
 
-void handleFace(std::vector<point3>& vertices, std::vector<triangle>& tris, const std::string& line, std::shared_ptr<material> mat) {
+void handleFace(std::vector<point3>& vertices, std::vector<triangle>& tris, const std::string& line) {
     std::istringstream stream(line);
     std::string triplet;
     int indices[3];
@@ -50,12 +50,11 @@ void handleFace(std::vector<point3>& vertices, std::vector<triangle>& tris, cons
     point3 c = vertices[indices[2]];
 
     // Create and store the triangle
-    tris.push_back(triangle(a, b, c, mat));
+    tris.push_back(triangle(a, b, c));
 }
 
 inline shared_ptr<mesh> readFile(std::string fileName) {
-    auto material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
-
+    auto mat = make_shared<lambertian>(color(0.4, 0.2, 0.1));
     std::vector<point3> vertices;
     std::vector<triangle> tris;
 
@@ -69,12 +68,12 @@ inline shared_ptr<mesh> readFile(std::string fileName) {
         // if (line.rfind("vt ", 0) == 0)
         //     handleVertex(vertices, line.substr(3));
         if (line.rfind("f ", 0) == 0)
-            handleFace(vertices, tris, line.substr(2), material2);
+            handleFace(vertices, tris, line.substr(2));
     }
 
     file.close();
 
-    return make_shared<mesh>(tris);
+    return make_shared<mesh>(tris, mat);
 }
 
 #endif

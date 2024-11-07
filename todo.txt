@@ -1,5 +1,1 @@
-Give meshes a center, coords of each triangles are offsets from there.
-
-The mesh needs a material, not the triangles.
-
 BVH for vertices

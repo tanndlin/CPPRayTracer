@@ -13,11 +13,14 @@ class mesh : public hittable {
     std::vector<triangle> tris;
 
     mesh(std::vector<triangle> tris) : tris(tris) {
-        center = point3();
-        for (const auto& tri : tris)
-            center += tri.center;
+        origin = point3();
+    }
 
-        center /= tris.size();
+    mesh(std::vector<triangle> tris, shared_ptr<material> mat) : tris(tris), mat(mat) {
+        origin = point3();
+        for (auto& tri : tris) {
+            tri.set_material(mat);
+        }
     }
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
@@ -37,7 +40,7 @@ class mesh : public hittable {
     }
 
     bounding_box get_bounds() const override {
-        bounding_box box = bounding_box(center);
+        bounding_box box = bounding_box(origin);
         for (const auto& tri : tris) {
             box.expand_to_contain(tri.a);
             box.expand_to_contain(tri.b);
@@ -46,6 +49,22 @@ class mesh : public hittable {
 
         return box;
     }
+
+    void set_origin(point3 p) {
+        point3 oldPos = origin;
+        origin = p;
+        point3 offset = origin - oldPos;
+        // Move all triangles to the new origin
+        for (auto& tri : tris) {
+            tri.a += offset;
+            tri.b += offset;
+            tri.c += offset;
+            tri.origin += offset;
+        }
+    }
+
+   private:
+    shared_ptr<material> mat;
 };
 
 #endif

@@ -28,7 +28,7 @@ class hittable {
     virtual bool hit(const ray& r, interval ray_t, hit_record& rec) const = 0;
     virtual bounding_box get_bounds() const = 0;
 
-    point3 center;
+    point3 origin;
 };
 
 #endif

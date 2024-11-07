@@ -58,7 +58,7 @@ class node {
         hittable_list aList = hittable_list();
         hittable_list bList = hittable_list();
         for (const auto& object : children.objects) {
-            point3 center = object->center;
+            point3 center = object->origin;
             if (center.e[longestAxis] < splitPoint)
                 aList.add(object);
             else

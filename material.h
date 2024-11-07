@@ -90,4 +90,6 @@ class dielectric : public material {
     }
 };
 
+shared_ptr<material> MISSING_TEXTURE_MAT = make_shared<lambertian>(color(1, 0, 1));
+
 #endif

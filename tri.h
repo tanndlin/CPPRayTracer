@@ -2,6 +2,7 @@
 #define TRI_H
 
 #include "hittable.h"
+#include "material.h"
 #include "rtweekend.h"
 
 class triangle : public hittable {
@@ -10,8 +11,9 @@ class triangle : public hittable {
     point3 b;
     point3 c;
 
-    triangle(const point3& a, const point3& b, const point3& c, shared_ptr<material> mat) : a(a), b(b), c(c), mat(mat) {
-        center = (a + b + c) / 3;
+    triangle(const point3& a, const point3& b, const point3& c) : a(a), b(b), c(c) {
+        origin = (a + b + c) / 3;
+        mat = MISSING_TEXTURE_MAT;
     }
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
@@ -47,6 +49,8 @@ class triangle : public hittable {
         box.expand_to_contain(c);
         return box;
     }
+
+    void set_material(shared_ptr<material> m) { mat = m; }
 
    private:
     shared_ptr<material> mat;

@@ -8,11 +8,11 @@ class sphere : public hittable {
    public:
     sphere(const point3& c, double radius, shared_ptr<material> mat)
         : radius(std::fmax(0, radius)), mat(mat) {
-        center = c;
+        origin = c;
     }
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
-        vec3 oc = center - r.origin();
+        vec3 oc = origin - r.origin();
         auto a = r.direction().length_squared();
         auto h = dot(r.direction(), oc);
         auto c = oc.length_squared() - radius * radius;
@@ -33,7 +33,7 @@ class sphere : public hittable {
 
         rec.t = root;
         rec.p = r.at(rec.t);
-        vec3 outward_normal = (rec.p - center) / radius;
+        vec3 outward_normal = (rec.p - origin) / radius;
         rec.set_face_normal(r, outward_normal);
         rec.mat = mat;
 
@@ -41,8 +41,8 @@ class sphere : public hittable {
     }
 
     bounding_box get_bounds() const override {
-        point3 neg = point3(center.x() - radius, center.y() - radius, center.z() - radius);
-        point3 pos = point3(center.x() + radius, center.y() + radius, center.z() + radius);
+        point3 neg = point3(origin.x() - radius, origin.y() - radius, origin.z() - radius);
+        point3 pos = point3(origin.x() + radius, origin.y() + radius, origin.z() + radius);
 
         return bounding_box(neg, pos);
     }

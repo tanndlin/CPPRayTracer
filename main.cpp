@@ -17,8 +17,13 @@ int main() {
     // auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
     // world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
 
-    shared_ptr<mesh> m = readFile("donut.obj");
-    world.add(m);
+    shared_ptr<mesh> m1 = readFile("donut.obj");
+    shared_ptr<mesh> m2 = readFile("donut.obj");
+    world.add(m1);
+    world.add(m2);
+
+    m1->set_origin(point3(2, 0, 0));
+    m2->set_origin(point3(-2, 0, 0));
     const node world_node = node(world, 0);
 
     camera cam;
@@ -29,7 +34,7 @@ int main() {
     // cam.max_depth = 50;
 
     cam.vfov = 30;
-    cam.lookfrom = point3(3, 10, -10);
+    cam.lookfrom = point3(0, 10, -10);
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
 
