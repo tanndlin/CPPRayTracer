@@ -11,6 +11,7 @@ class bounding_box {
     point3 max;
 
     bounding_box() : min(point3()), max(point3()) {}
+    bounding_box(point3 p) : min(p), max(p) {}
     bounding_box(point3 a, point3 b) : min(a), max(b) {
         // Make sure a is the minimum point and b is the maximum point
         if (min.x() > max.x()) {
@@ -56,6 +57,16 @@ class bounding_box {
         max.setX(std::fmax(max.x(), other.max.x()));
         max.setY(std::fmax(max.y(), other.max.y()));
         max.setZ(std::fmax(max.z(), other.max.z()));
+    }
+
+    void expand_to_contain(point3 p) {
+        min.setX(std::fmin(min.x(), p.x()));
+        min.setY(std::fmin(min.y(), p.y()));
+        min.setZ(std::fmin(min.z(), p.z()));
+
+        max.setX(std::fmax(max.x(), p.x()));
+        max.setY(std::fmax(max.y(), p.y()));
+        max.setZ(std::fmax(max.z(), p.z()));
     }
 
     int get_longest_axis() {

@@ -10,9 +10,11 @@ class triangle : public hittable {
     point3 b;
     point3 c;
 
-    triangle(const point3& a, const point3& b, const point3& c, shared_ptr<material> mat) : a(a), b(b), c(c), mat(mat) {}
+    triangle(const point3& a, const point3& b, const point3& c, shared_ptr<material> mat) : a(a), b(b), c(c), mat(mat) {
+        center = (a + b + c) / 3;
+    }
 
-    bool hit(const ray& r, interval ray_t, hit_record& rec) {
+    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
         point3 edgeAB = b - a;
         point3 edgeAC = c - a;
         point3 normal = cross(edgeAB, edgeAC);
@@ -35,6 +37,15 @@ class triangle : public hittable {
         rec.p = r.at(rec.t);
         rec.set_face_normal(r, normal);
         rec.mat = mat;
+
+        return true;
+    }
+
+    bounding_box get_bounds() const override {
+        bounding_box box = bounding_box(a, a);
+        box.expand_to_contain(b);
+        box.expand_to_contain(c);
+        return box;
     }
 
    private:
