@@ -7,13 +7,13 @@
 #include "bounding_box.h"
 #include "hittable_list.h"
 #include "rtweekend.h"
+#include "tri.h"
 
 class node {
    public:
-    node(std::vector<triangle> tris, int splitDepth) : bounds(), children(), splitDepth(splitDepth) {
-        for (auto& tri : tris) {
+    node(std::vector<triangle>& tris, int splitDepth) : bounds(), children(), splitDepth(splitDepth) {
+        for (auto& tri : tris)
             children.add(std::make_shared<triangle>(tri));
-        }
 
         childA = NULL;
         childB = NULL;
@@ -56,8 +56,8 @@ class node {
 
         return children.hit(r, ray_t, rec);
 
-        // rec.mat = make_shared<lambertian>(color(1, 0, 1));
-        // return true;
+        rec.mat = make_shared<lambertian>(color(1, 0, 1));
+        return true;
     }
 
    private:

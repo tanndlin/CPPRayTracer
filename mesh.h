@@ -18,7 +18,7 @@ class mesh : public hittable {
         origin = point3();
     }
 
-    mesh(std::vector<triangle> tris, shared_ptr<material> mat) : bvh(tris, 0), mat(mat) {
+    mesh(std::vector<triangle>& tris, shared_ptr<material> mat) : bvh(tris, 0), mat(mat) {
         origin = point3();
         for (auto& tri : tris) {
             tri.set_material(mat);

@@ -2,4 +2,23 @@
     "files.associations": {
         "*.h": "cpp",
     },
+    "restoreTerminals.terminals": [
+        {
+            "splitTerminals": [
+                {
+                    "name": "Run",
+                    "commands": [
+                        "just watch"
+                    ]
+                },
+                {
+                    "name": "Git",
+                    "commands": [
+                        "git status"
+                    ]
+                }
+            ]
+        }
+    ],
+    "restoreTerminals.runOnStartup": true
 }
