@@ -27,6 +27,7 @@ class hittable {
     virtual ~hittable() = default;
     virtual bool hit(const ray& r, interval ray_t, hit_record& rec) const = 0;
     virtual bounding_box get_bounds() const = 0;
+    virtual void move_origin(const vec3& offset) = 0;
 
     point3 origin;
 };

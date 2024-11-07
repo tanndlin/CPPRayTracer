@@ -10,6 +10,19 @@
 
 class node {
    public:
+    node(std::vector<triangle> tris, int splitDepth) : bounds(), children(), splitDepth(splitDepth) {
+        for (auto& tri : tris) {
+            children.add(std::make_shared<triangle>(tri));
+        }
+
+        childA = NULL;
+        childB = NULL;
+        if (this->children.objects.size() > 1)
+            split();
+
+        bounds.calc_points();
+    }
+
     node(hittable_list children, int splitDepth) : bounds(children.get_bounds()), children(children), splitDepth(splitDepth) {
         childA = NULL;
         childB = NULL;

@@ -52,6 +52,13 @@ class triangle : public hittable {
 
     void set_material(shared_ptr<material> m) { mat = m; }
 
+    void move_origin(const vec3& offset) override {
+        a += offset;
+        b += offset;
+        c += offset;
+        origin += offset;
+    }
+
    private:
     shared_ptr<material> mat;
 };

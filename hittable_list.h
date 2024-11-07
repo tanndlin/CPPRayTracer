@@ -43,6 +43,11 @@ class hittable_list : public hittable {
 
         return box;
     }
+
+    void move_origin(const vec3& offset) override {
+        for (auto& object : objects)
+            object->move_origin(offset);
+    }
 };
 
 #endif

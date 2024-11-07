@@ -5,18 +5,20 @@
 
 #include "hittable.h"
 #include "material.h"
+#include "node.h"
 #include "rtweekend.h"
 #include "tri.h"
 
 class mesh : public hittable {
    public:
+    node bvh;
     std::vector<triangle> tris;
 
-    mesh(std::vector<triangle> tris) : tris(tris) {
+    mesh(std::vector<triangle> tris) : bvh(tris, 0) {
         origin = point3();
     }
 
-    mesh(std::vector<triangle> tris, shared_ptr<material> mat) : tris(tris), mat(mat) {
+    mesh(std::vector<triangle> tris, shared_ptr<material> mat) : bvh(tris, 0), mat(mat) {
         origin = point3();
         for (auto& tri : tris) {
             tri.set_material(mat);
@@ -24,27 +26,13 @@ class mesh : public hittable {
     }
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
-        hit_record temp_rec;
-        bool hit_anything = false;
-        auto closest_so_far = ray_t.max;
-
-        for (const auto& tri : tris) {
-            if (tri.hit(r, interval(ray_t.min, closest_so_far), temp_rec)) {
-                hit_anything = true;
-                closest_so_far = temp_rec.t;
-                rec = temp_rec;
-            }
-        }
-
-        return hit_anything;
+        return bvh.hit(r, ray_t, rec);
     }
 
     bounding_box get_bounds() const override {
         bounding_box box = bounding_box(origin);
-        for (const auto& tri : tris) {
-            box.expand_to_contain(tri.a);
-            box.expand_to_contain(tri.b);
-            box.expand_to_contain(tri.c);
+        for (const auto& tri : bvh.children.objects) {
+            box.expand_to_contain(tri->get_bounds());
         }
 
         return box;
@@ -55,11 +43,15 @@ class mesh : public hittable {
         origin = p;
         point3 offset = origin - oldPos;
         // Move all triangles to the new origin
-        for (auto& tri : tris) {
-            tri.a += offset;
-            tri.b += offset;
-            tri.c += offset;
-            tri.origin += offset;
+        for (auto& tri : bvh.children.objects) {
+            tri->move_origin(offset);
+        }
+    }
+
+    void move_origin(const vec3& offset) override {
+        origin += offset;
+        for (auto& tri : bvh.children.objects) {
+            tri->move_origin(offset);
         }
     }
 
