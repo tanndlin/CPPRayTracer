@@ -155,4 +155,12 @@ inline vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) {
     return r_out_perp + r_out_parallel;
 }
 
+inline vec3 vec_min(const vec3& a, const vec3& b) {
+    return vec3(fmin(a.x(), b.x()), fmin(a.y(), b.y()), fmin(a.z(), b.z()));
+}
+
+inline vec3 vec_max(const vec3& a, const vec3& b) {
+    return vec3(fmax(a.x(), b.x()), fmax(a.y(), b.y()), fmax(a.z(), b.z()));
+}
+
 #endif

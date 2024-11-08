@@ -90,100 +90,21 @@ class bounding_box {
     }
 
     bool hit(const ray& r) const {
-        // There are 3 faces that the ray can see
-        // The dot product of the ray direction and the normal of the face will be negative
-        // if the ray is facing the face
-        if (dot(r.direction(), bottomNormal) < 0) {
-            // Calc how far the ray is from the face
-            double targetY = a.y();
-            double t = (targetY - r.origin().y()) / r.direction().y();
-            point3 target = r.at(t);
-            // Check if target is within the face
-            double minX = a.x();
-            double maxX = c.x();
-            double minZ = c.z();
-            double maxZ = a.z();
-            if (target.x() >= minX && target.x() <= maxX && target.z() >= minZ && target.z() <= maxZ) {
-                return true;
-            }
+        double t1 = (min[0] - r.origin()[0]) * r.dir_inv[0];
+        double t2 = (max[0] - r.origin()[0]) * r.dir_inv[0];
+
+        double tmin = std::min(t1, t2);
+        double tmax = std::max(t1, t2);
+
+        for (int i = 1; i < 3; ++i) {
+            t1 = (min[i] - r.origin()[i]) * r.dir_inv[i];
+            t2 = (max[i] - r.origin()[i]) * r.dir_inv[i];
+
+            tmin = std::max(tmin, std::min(std::min(t1, t2), tmax));
+            tmax = std::min(tmax, std::max(std::max(t1, t2), tmin));
         }
 
-        if (dot(r.direction(), topNormal) < 0) {
-            // Calc how far the ray is from the face
-            double targetY = e.y();
-            double t = (targetY - r.origin().y()) / r.direction().y();
-            point3 target = r.at(t);
-            // Check if target is within the face
-            double minX = h.x();
-            double maxX = f.x();
-            double minZ = h.z();
-            double maxZ = f.z();
-            if (target.x() >= minX && target.x() <= maxX && target.z() >= minZ && target.z() <= maxZ) {
-                return true;
-            }
-        }
-
-        if (dot(r.direction(), maxZNormal) < 0) {
-            // Calc how far the ray is from the face
-            double targetZ = a.z();
-            double t = (targetZ - r.origin().z()) / r.direction().z();
-            point3 target = r.at(t);
-            // Check if target is within the face
-            double minX = a.x();
-            double maxX = f.x();
-            double minY = a.y();
-            double maxY = f.y();
-            if (target.x() >= minX && target.x() <= maxX && target.y() >= minY && target.y() <= maxY) {
-                return true;
-            }
-        }
-
-        if (dot(r.direction(), minZNormal) < 0) {
-            // Calc how far the ray is from the face
-            double targetZ = c.z();
-            double t = (targetZ - r.origin().z()) / r.direction().z();
-            point3 target = r.at(t);
-            // Check if target is within the face
-            double minX = d.x();
-            double maxX = g.x();
-            double minY = d.y();
-            double maxY = g.y();
-            if (target.x() >= minX && target.x() <= maxX && target.y() >= minY && target.y() <= maxY) {
-                return true;
-            }
-        }
-
-        if (dot(r.direction(), maxXNormal) < 0) {
-            // Calc how far the ray is from the face
-            double targetX = b.x();
-            double t = (targetX - r.origin().x()) / r.direction().x();
-            point3 target = r.at(t);
-            // Check if target is within the face
-            double minY = b.y();
-            double maxY = g.y();
-            double minZ = g.z();
-            double maxZ = b.z();
-            if (target.y() >= minY && target.y() <= maxY && target.z() >= minZ && target.z() <= maxZ) {
-                return true;
-            }
-        }
-
-        if (dot(r.direction(), minXNormal) < 0) {
-            // Calc how far the ray is from the face
-            double targetX = d.x();
-            double t = (targetX - r.origin().x()) / r.direction().x();
-            point3 target = r.at(t);
-            // Check if target is within the face
-            double minY = a.y();
-            double maxY = h.y();
-            double minZ = h.z();
-            double maxZ = a.z();
-            if (target.y() >= minY && target.y() <= maxY && target.z() >= minZ && target.z() <= maxZ) {
-                return true;
-            }
-        }
-
-        return false;
+        return tmax > std::max(tmin, 0.0);
     }
 
     void calc_points() {

@@ -47,6 +47,10 @@ class sphere : public hittable {
         return bounding_box(neg, pos);
     }
 
+    void move_origin(const vec3& offset) override {
+        origin += offset;
+    }
+
    private:
     double radius;
     shared_ptr<material> mat;

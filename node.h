@@ -18,7 +18,7 @@ class node {
         childA = NULL;
         childB = NULL;
         bounds = children.get_bounds();
-        if (this->children.objects.size() > 1)
+        if (this->children.objects.size() > 1 && splitDepth < MAX_SPLIT_DEPTH)
             split();
 
         bounds.calc_points();
@@ -44,24 +44,18 @@ class node {
 
         bool hit_anything = false;
         double closest_so_far = ray_t.max;
-        if (childA && childA->hit(r, interval(ray_t.min, closest_so_far), rec)) {
+        if (childA && childA->hit(r, ray_t, rec)) {
             hit_anything = true;
             closest_so_far = rec.t;
         }
 
-        if (childB && childB->hit(r, interval(ray_t.min, closest_so_far), rec)) {
-            hit_anything = true;
-            closest_so_far = rec.t;
-        }
+        if (childB && childB->hit(r, interval(ray_t.min, closest_so_far), rec))
+            return true;
 
-        if (childA || childB)
+        if (childA)
             return hit_anything;
 
         return children.hit(r, ray_t, rec);
-
-        if (children.hit(r, ray_t, rec)) return true;
-        rec.mat = make_shared<lambertian>(color(1, 0, 1));
-        return true;
     }
 
     void move_origin(vec3 offset) {

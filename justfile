@@ -1,7 +1,7 @@
 set shell := ["cmd.exe", "/c"]
 
 build:
-    g++ main.cpp -o main
+    g++ -O3 main.cpp -o main
 
 image:
     just build

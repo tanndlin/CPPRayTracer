@@ -1,0 +1,1 @@
+Some triangles missing when using BVH
