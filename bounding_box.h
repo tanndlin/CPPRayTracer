@@ -1,9 +1,7 @@
 #ifndef BOUNDING_BOX_H
 #define BOUNDING_BOX_H
 
-#include "hittable.h"
 #include "rtweekend.h"
-#include "util.h"
 
 class bounding_box {
    public:

@@ -31,8 +31,10 @@ class mesh : public hittable {
 
     bounding_box get_bounds() const override {
         bounding_box box = bounding_box(origin);
-        for (const auto& tri : bvh.children.objects) {
-            box.expand_to_contain(tri->get_bounds());
+        for (const auto& tri : tris) {
+            box.expand_to_contain(tri->a);
+            box.expand_to_contain(tri->b);
+            box.expand_to_contain(tri->c);
         }
 
         return box;

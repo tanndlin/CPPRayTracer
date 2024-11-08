@@ -90,16 +90,13 @@ class node {
     static const int MAX_SPLIT_DEPTH = 32;
     int splitDepth = 0;
     void split() {
-        // Find longest axis
         int longestAxis = bounds.get_longest_axis();
         double splitPoint = (bounds.min.e[longestAxis] + bounds.max.e[longestAxis]) / 2;
 
         hittable_list aList = hittable_list();
         hittable_list bList = hittable_list();
         for (const auto& object : children.objects) {
-            // point3 center = (object->get_bounds().min + object->get_bounds().max) / 2;
-            point3 center = object->origin;
-            if (center.e[longestAxis] < splitPoint)
+            if (object->origin[longestAxis] < splitPoint)
                 aList.add(object);
             else
                 bList.add(object);
@@ -107,7 +104,6 @@ class node {
 
         // All nodes were in one child, this was not a useful split
         if (aList.objects.size() == 0 || bList.objects.size() == 0) {
-            // std::cerr << "Useless split... number of children: " << children.objects.size() << "\n";
             return;
         }
 
