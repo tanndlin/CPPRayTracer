@@ -23,7 +23,7 @@ int main() {
     // world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
 
     // shared_ptr<mesh> m1 = readFile("funnel.obj");
-    shared_ptr<mesh> m2 = readFile("genji.obj");
+    shared_ptr<mesh> m2 = readFile("Chess.obj");
     auto readFileTime = high_resolution_clock::now() - total_time;
     std::cerr << "Read file time: " << duration_cast<milliseconds>(readFileTime).count() << "ms\n";
     // world.add(m1);
@@ -31,28 +31,31 @@ int main() {
 
     // m1->set_origin(point3(2, 0, 0));
     // m1->set_material(make_shared<lambertian>(color(0, 1, 0)));
-    m2->set_origin(point3(-20, 0, 0));
-    m2->set_material(make_shared<lambertian>(color(1, 0, 0)));
+    // m2->move_origin(point3(0, 0.1, 0));
+    m2->scale(2);
+    m2->set_material(make_shared<lambertian>(color(.5, .2, .7)));
 
     auto bhv_build_start = high_resolution_clock::now();
     const node world_node = node(world, 0);
     auto bhv_build_time = high_resolution_clock::now() - bhv_build_start;
     std::cerr << "BVH build time: " << duration_cast<milliseconds>(bhv_build_time).count() << "ms\n";
+    std::cerr << "Total hittable count: " << m2->bvh.children.objects.size() << "\n";
+    std::cerr << "Largest BVH size: " << m2->bvh.get_largest_bvh() << "\n";
 
     camera cam;
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 400;
-    cam.samples_per_pixel = 10;
+    cam.samples_per_pixel = 20;
     // cam.max_depth = 50;
 
-    cam.vfov = 30;
-    cam.lookfrom = point3(13, 20, 4);
+    cam.vfov = 45;
+    cam.lookfrom = point3(1, 3, 13);
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
 
-    cam.defocus_angle = 0.6;
-    cam.focus_dist = 30.0;
+    cam.defocus_angle = 0.0;
+    cam.focus_dist = 10.0;
 
     auto render_start = high_resolution_clock::now();
     cam.render(world_node);

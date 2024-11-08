@@ -89,7 +89,7 @@ class bounding_box {
         calc_points();
     }
 
-    bool hit(const ray& r) const {
+    double hit(const ray& r) const {
         double t1 = (min[0] - r.origin()[0]) * r.dir_inv[0];
         double t2 = (max[0] - r.origin()[0]) * r.dir_inv[0];
 
@@ -104,7 +104,7 @@ class bounding_box {
             tmax = std::min(tmax, std::max(std::max(t1, t2), tmin));
         }
 
-        return tmax > std::max(tmin, 0.0);
+        return tmax > std::max(tmin, 0.0) ? tmin : -1;
     }
 
     void calc_points() {

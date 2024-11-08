@@ -57,8 +57,27 @@ class mesh : public hittable {
         }
     }
 
+    void scale(double factor) {
+        scale(vec3(factor, factor, factor));
+    }
+
+    void scale(const vec3& v) {
+        for (auto& tri : tris) {
+            tri->a = origin + (tri->a - origin) * v;
+            tri->b = origin + (tri->b - origin) * v;
+            tri->c = origin + (tri->c - origin) * v;
+            tri->origin = origin + (tri->origin - origin) * v;
+        }
+
+        calculate_bvh();
+    }
+
    private:
     shared_ptr<material> mat;
+
+    void calculate_bvh() {
+        bvh = node(tris, 0);
+    }
 };
 
 #endif

@@ -12,7 +12,8 @@ class triangle : public hittable {
     point3 c;
 
     triangle(const point3& a, const point3& b, const point3& c) : a(a), b(b), c(c) {
-        origin = (a + b + c) / 3;
+        auto bounds = get_bounds();
+        origin = (bounds.min + bounds.max) / 2;
         mat = MISSING_TEXTURE_MAT;
     }
 

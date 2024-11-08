@@ -39,7 +39,8 @@ class node {
     std::unique_ptr<node> childB;
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const {
-        if (!bounds.hit(r))
+        double dist = bounds.hit(r);
+        if (dist < 0 || ray_t.max < dist)
             return false;
 
         bool hit_anything = false;
@@ -68,8 +69,15 @@ class node {
             children.move_origin(offset);
     }
 
+    int get_largest_bvh() const {
+        if (childA && childB)
+            return std::max(childA->get_largest_bvh(), childB->get_largest_bvh());
+
+        return children.objects.size();
+    }
+
    private:
-    static const int MAX_SPLIT_DEPTH = 10;
+    static const int MAX_SPLIT_DEPTH = 32;
     int splitDepth = 0;
     void split() {
         // Find longest axis
@@ -79,6 +87,7 @@ class node {
         hittable_list aList = hittable_list();
         hittable_list bList = hittable_list();
         for (const auto& object : children.objects) {
+            // point3 center = (object->get_bounds().min + object->get_bounds().max) / 2;
             point3 center = object->origin;
             if (center.e[longestAxis] < splitPoint)
                 aList.add(object);
@@ -87,8 +96,10 @@ class node {
         }
 
         // All nodes were in one child, this was not a useful split
-        if (aList.objects.size() == 0 || bList.objects.size() == 0)
+        if (aList.objects.size() == 0 || bList.objects.size() == 0) {
+            // std::cerr << "Useless split... number of children: " << children.objects.size() << "\n";
             return;
+        }
 
         childA = std::make_unique<node>(aList, splitDepth + 1);
         childB = std::make_unique<node>(bList, splitDepth + 1);
