@@ -43,18 +43,28 @@ class node {
         if (dist < 0 || ray_t.max < dist)
             return false;
 
-        bool hit_anything = false;
-        double closest_so_far = ray_t.max;
-        if (childA && childA->hit(r, ray_t, rec)) {
-            hit_anything = true;
-            closest_so_far = rec.t;
+        if (childA && childB) {
+            double distA = childA->bounds.hit(r);
+            double distB = childB->bounds.hit(r);
+
+            node* near = distA < distB ? childA.get() : childB.get();
+            node* far = distA < distB ? childB.get() : childA.get();
+
+            bool hit_near = false;
+            double closest_so_far = ray_t.max;
+            if (near->hit(r, ray_t, rec)) {
+                hit_near = true;
+                closest_so_far = rec.t;
+            }
+
+            if (closest_so_far < distB)
+                return true;
+
+            if (far->hit(r, interval(ray_t.min, closest_so_far), rec))
+                return true;
+
+            return hit_near;
         }
-
-        if (childB && childB->hit(r, interval(ray_t.min, closest_so_far), rec))
-            return true;
-
-        if (childA)
-            return hit_anything;
 
         return children.hit(r, ray_t, rec);
     }
