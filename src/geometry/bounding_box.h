@@ -1,7 +1,7 @@
 #ifndef BOUNDING_BOX_H
 #define BOUNDING_BOX_H
 
-#include "rtweekend.h"
+#include "../util/utils.h"
 
 class bounding_box {
    public:

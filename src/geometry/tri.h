@@ -1,9 +1,9 @@
 #ifndef TRI_H
 #define TRI_H
 
+#include "../scene/material.h"
+#include "../util/utils.h"
 #include "hittable.h"
-#include "material.h"
-#include "rtweekend.h"
 
 class triangle : public hittable {
    public:

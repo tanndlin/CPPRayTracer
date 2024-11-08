@@ -3,10 +3,10 @@
 
 #include <vector>
 
+#include "../scene/material.h"
+#include "../util/utils.h"
 #include "hittable.h"
-#include "material.h"
 #include "node.h"
-#include "rtweekend.h"
 #include "tri.h"
 
 class mesh : public hittable {

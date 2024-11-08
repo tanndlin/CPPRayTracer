@@ -3,9 +3,9 @@
 
 #include <vector>
 
+#include "../util/utils.h"
 #include "bounding_box.h"
 #include "hittable.h"
-#include "rtweekend.h"
 
 class hittable_list : public hittable {
    public:

@@ -1,8 +1,8 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
 
+#include "../util/utils.h"
 #include "bounding_box.h"
-#include "rtweekend.h"
 
 class material;
 

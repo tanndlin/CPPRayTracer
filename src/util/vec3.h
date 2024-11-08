@@ -1,7 +1,7 @@
 #ifndef VEC3_H
 #define VEC3_H
 
-#include "rtweekend.h"
+#include "../util/utils.h"
 
 class vec3 {
    public:

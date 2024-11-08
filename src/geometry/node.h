@@ -4,9 +4,9 @@
 #include <memory>
 #include <vector>
 
+#include "../util/utils.h"
 #include "bounding_box.h"
 #include "hittable_list.h"
-#include "rtweekend.h"
 #include "tri.h"
 
 class node {

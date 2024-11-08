@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#include "mesh.h"
-#include "rtweekend.h"
-#include "tri.h"
+#include "../geometry/mesh.h"
+#include "../geometry/tri.h"
+#include "../util/utils.h"
 
 void handleVertex(std::vector<point3>& vertices, const std::string& line) {
     std::istringstream stream(line);
@@ -59,6 +59,10 @@ inline shared_ptr<mesh> readFile(std::string fileName) {
     std::vector<shared_ptr<triangle>> tris;
 
     std::ifstream file(fileName);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file: " + fileName);
+    }
+
     std::string line;
     while (std::getline(file, line)) {
         if (line.rfind("v ", 0) == 0)

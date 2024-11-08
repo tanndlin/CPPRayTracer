@@ -1,16 +1,16 @@
 #include <chrono>
 #include <iostream>
 
-#include "camera.h"
-#include "hittable.h"
-#include "hittable_list.h"
-#include "material.h"
-#include "mesh.h"
-#include "node.h"
-#include "reader.h"
-#include "rtweekend.h"
-#include "sphere.h"
-#include "tri.h"
+#include "geometry/hittable.h"
+#include "geometry/hittable_list.h"
+#include "geometry/mesh.h"
+#include "geometry/node.h"
+#include "geometry/sphere.h"
+#include "geometry/tri.h"
+#include "scene/camera.h"
+#include "scene/material.h"
+#include "util/reader.h"
+#include "util/utils.h"
 
 using namespace std::chrono;
 
@@ -23,7 +23,7 @@ int main() {
     // world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
 
     // shared_ptr<mesh> m1 = readFile("funnel.obj");
-    shared_ptr<mesh> m2 = readFile("Chess.obj");
+    shared_ptr<mesh> m2 = readFile("objs/Chess.obj");
     auto readFileTime = high_resolution_clock::now() - total_time;
     std::cerr << "Read file time: " << duration_cast<milliseconds>(readFileTime).count() << "ms\n";
     // world.add(m1);
@@ -46,7 +46,7 @@ int main() {
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 400;
-    cam.samples_per_pixel = 20;
+    cam.samples_per_pixel = 10;
     // cam.max_depth = 50;
 
     cam.vfov = 45;

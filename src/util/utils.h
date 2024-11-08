@@ -1,5 +1,5 @@
-#ifndef RTWEEKEND_H
-#define RTWEEKEND_H
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <cmath>
 #include <cstdlib>
@@ -35,10 +35,9 @@ inline double random_double(double min, double max) {
 }
 
 // Common Headers
-
-#include "color.h"
-#include "interval.h"
-#include "ray.h"
-#include "vec3.h"
+#include "../scene/color.h"
+#include "../scene/ray.h"
+#include "../util/interval.h"
+#include "../util/vec3.h"
 
 #endif
