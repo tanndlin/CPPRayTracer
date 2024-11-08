@@ -11,9 +11,9 @@
 
 class node {
    public:
-    node(std::vector<triangle>& tris, int splitDepth) : bounds(), children(), splitDepth(splitDepth) {
+    node(std::vector<shared_ptr<triangle>>& tris, int splitDepth) : bounds(), children(), splitDepth(splitDepth) {
         for (auto& tri : tris)
-            children.add(std::make_shared<triangle>(tri));
+            children.add(tri);
 
         childA = NULL;
         childB = NULL;

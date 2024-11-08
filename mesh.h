@@ -12,16 +12,16 @@
 class mesh : public hittable {
    public:
     node bvh;
-    std::vector<triangle> tris;
+    std::vector<shared_ptr<triangle>> tris;
 
-    mesh(std::vector<triangle> tris) : bvh(tris, 0) {
+    mesh(std::vector<shared_ptr<triangle>>& tris) : bvh(tris, 0), tris(tris) {
         origin = point3();
     }
 
-    mesh(std::vector<triangle>& tris, shared_ptr<material> mat) : bvh(tris, 0), mat(mat) {
+    mesh(std::vector<shared_ptr<triangle>>& tris, shared_ptr<material> mat) : bvh(tris, 0), tris(tris), mat(mat) {
         origin = point3();
         for (auto& tri : tris) {
-            tri.set_material(mat);
+            tri->set_material(mat);
         }
     }
 
@@ -48,6 +48,13 @@ class mesh : public hittable {
 
     void move_origin(const vec3& offset) override {
         bvh.move_origin(offset);
+    }
+
+    void set_material(shared_ptr<material> m) {
+        mat = m;
+        for (auto& tri : tris) {
+            tri->set_material(m);
+        }
     }
 
    private:
