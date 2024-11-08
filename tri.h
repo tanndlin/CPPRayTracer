@@ -35,6 +35,9 @@ class triangle : public hittable {
         if (!(determinant >= 1e-6 && dst >= 0 && u >= 0 && v >= 0 && w >= 0))
             return false;
 
+        if (!ray_t.contains(dst))
+            return false;
+
         rec.t = dst;
         rec.p = r.at(rec.t);
         rec.set_face_normal(r, normal);

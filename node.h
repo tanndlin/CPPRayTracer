@@ -44,13 +44,15 @@ class node {
 
         bool hit_anything = false;
         double closest_so_far = ray_t.max;
-        if (childA && childA->hit(r, ray_t, rec)) {
+        if (childA && childA->hit(r, interval(ray_t.min, closest_so_far), rec)) {
             hit_anything = true;
             closest_so_far = rec.t;
         }
 
-        if (childB && childB->hit(r, interval(ray_t.min, closest_so_far), rec))
+        if (childB && childB->hit(r, interval(ray_t.min, closest_so_far), rec)) {
             hit_anything = true;
+            closest_so_far = rec.t;
+        }
 
         if (childA || childB)
             return hit_anything;
