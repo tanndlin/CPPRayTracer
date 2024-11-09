@@ -32,9 +32,8 @@ class mesh : public hittable {
     bounding_box get_bounds() const override {
         bounding_box box = bounding_box(origin);
         for (const auto& tri : tris) {
-            box.expand_to_contain(tri->a);
-            box.expand_to_contain(tri->b);
-            box.expand_to_contain(tri->c);
+            box.expand_to_contain(tri->min);
+            box.expand_to_contain(tri->max);
         }
 
         return box;
@@ -65,10 +64,7 @@ class mesh : public hittable {
 
     void scale(const vec3& v) {
         for (auto& tri : tris) {
-            tri->a = origin + (tri->a - origin) * v;
-            tri->b = origin + (tri->b - origin) * v;
-            tri->c = origin + (tri->c - origin) * v;
-            tri->origin = origin + (tri->origin - origin) * v;
+            tri->scale(origin, v);
         }
 
         calculate_bvh();

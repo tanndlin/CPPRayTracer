@@ -10,30 +10,35 @@ class triangle : public hittable {
     point3 a;
     point3 b;
     point3 c;
+    point3 min;
+    point3 max;
 
     triangle(const point3& a, const point3& b, const point3& c) : a(a), b(b), c(c) {
-        auto bounds = get_bounds();
-        origin = (bounds.min + bounds.max) / 2;
         mat = MISSING_TEXTURE_MAT;
+        calc_bounds();
     }
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
-        point3 edgeAB = b - a;
-        point3 edgeAC = c - a;
-        point3 normal = cross(edgeAB, edgeAC);
         point3 ao = r.origin() - a;
         point3 dao = cross(ao, r.direction());
 
         double determinant = -dot(r.direction(), normal);
+        if (determinant < 1e-6)
+            return false;
+
         double invDet = 1 / determinant;
 
         // Calculate dst to triangle
         double dst = dot(ao, normal) * invDet;
-        double u = dot(edgeAC, dao) * invDet;
-        double v = -dot(edgeAB, dao) * invDet;
-        double w = 1 - u - v;
+        if (dst < 0)
+            return false;
 
-        if (!(determinant >= 1e-6 && dst >= 0 && u >= 0 && v >= 0 && w >= 0))
+        double u = dot(edgeAC, dao) * invDet;
+        if (u < 0 || u > 1)
+            return false;
+
+        double v = -dot(edgeAB, dao) * invDet;
+        if (v < 0 || u + v > 1)
             return false;
 
         if (!ray_t.contains(dst))
@@ -48,10 +53,21 @@ class triangle : public hittable {
     }
 
     bounding_box get_bounds() const override {
-        bounding_box box = bounding_box(a, a);
-        box.expand_to_contain(b);
-        box.expand_to_contain(c);
-        return box;
+        return bounds;
+    }
+
+    void calc_bounds() {
+        bounds = bounding_box(a, a);
+        bounds.expand_to_contain(b);
+        bounds.expand_to_contain(c);
+
+        min = bounds.min;
+        max = bounds.max;
+
+        origin = (min + max) / 2;
+        edgeAB = b - a;
+        edgeAC = c - a;
+        normal = cross(edgeAB, edgeAC);
     }
 
     void set_material(shared_ptr<material> m) { mat = m; }
@@ -60,11 +76,25 @@ class triangle : public hittable {
         a += offset;
         b += offset;
         c += offset;
-        origin += offset;
+
+        calc_bounds();
+    }
+
+    void scale(const point3& origin, const vec3& v) {
+        a = origin + v * (a - origin);
+        b = origin + v * (b - origin);
+        c = origin + v * (c - origin);
+
+        calc_bounds();
     }
 
    private:
     shared_ptr<material> mat;
+    bounding_box bounds;
+
+    point3 edgeAB;
+    point3 edgeAC;
+    point3 normal;
 };
 
 #endif

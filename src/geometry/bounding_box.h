@@ -48,23 +48,13 @@ class bounding_box {
     }
 
     void expand_to_contain(bounding_box other) {
-        min.setX(std::fmin(min.x(), other.min.x()));
-        min.setY(std::fmin(min.y(), other.min.y()));
-        min.setZ(std::fmin(min.z(), other.min.z()));
-
-        max.setX(std::fmax(max.x(), other.max.x()));
-        max.setY(std::fmax(max.y(), other.max.y()));
-        max.setZ(std::fmax(max.z(), other.max.z()));
+        min = vec_min(min, other.min);
+        max = vec_max(max, other.max);
     }
 
     void expand_to_contain(point3 p) {
-        min.setX(std::fmin(min.x(), p.x()));
-        min.setY(std::fmin(min.y(), p.y()));
-        min.setZ(std::fmin(min.z(), p.z()));
-
-        max.setX(std::fmax(max.x(), p.x()));
-        max.setY(std::fmax(max.y(), p.y()));
-        max.setZ(std::fmax(max.z(), p.z()));
+        min = vec_min(min, p);
+        max = vec_max(max, p);
     }
 
     int get_longest_axis() {
