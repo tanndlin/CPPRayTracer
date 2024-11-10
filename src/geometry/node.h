@@ -66,6 +66,11 @@ class node {
             return hit_near;
         }
 
+        if (children.objects.size() == 1060 && !childA || !childB) {
+            rec.mat = MISSING_TEXTURE_MAT;
+            return true;
+        }
+
         return children.hit(r, ray_t, rec);
     }
 
@@ -95,6 +100,10 @@ class node {
 
         hittable_list aList = hittable_list();
         hittable_list bList = hittable_list();
+
+        if (children.objects.size() == 1333)
+            std::cerr << "About to split " << children.objects.size() << " objects, on axis: (" << longestAxis << ") at " << splitPoint << "\n";
+
         for (const auto& object : children.objects) {
             if (object->origin[longestAxis] < splitPoint)
                 aList.add(object);
@@ -104,6 +113,14 @@ class node {
 
         // All nodes were in one child, this was not a useful split
         if (aList.objects.size() == 0 || bList.objects.size() == 0) {
+            if (children.objects.size() > 1000) {
+                std::cerr << "Useless split... Settling with " << children.objects.size() << " objects\n";
+                // print all children out
+                for (const auto& object : children.objects) {
+                    std::cerr << object->origin << "\n";
+                }
+                exit(1);
+            }
             return;
         }
 

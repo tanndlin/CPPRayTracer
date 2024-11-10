@@ -47,10 +47,10 @@ int main() {
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 400;
     cam.samples_per_pixel = 10;
-    // cam.max_depth = 50;
+    cam.max_depth = 2;
 
     cam.vfov = 45;
-    cam.lookfrom = point3(1, 3, 13);
+    cam.lookfrom = point3(13, 3, 0);
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
 
