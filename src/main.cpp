@@ -34,11 +34,6 @@ int main() {
     // m2->move_origin(point3(0, 0.1, 0));
     m2->scale(2);
     m2->set_material(make_shared<lambertian>(color(.5, .2, .7)));
-
-    auto bhv_build_start = high_resolution_clock::now();
-    const node world_node = node(world, 0);
-    auto bhv_build_time = high_resolution_clock::now() - bhv_build_start;
-    std::cerr << "BVH build time: " << duration_cast<milliseconds>(bhv_build_time).count() << "ms\n";
     std::cerr << "Total hittable count: " << m2->bvh.children.objects.size() << "\n";
     std::cerr << "Largest BVH size: " << m2->bvh.get_largest_bvh() << "\n";
 
@@ -50,7 +45,7 @@ int main() {
     cam.max_depth = 2;
 
     cam.vfov = 45;
-    cam.lookfrom = point3(13, 3, 0);
+    cam.lookfrom = point3(13, 3, 13);
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
 
@@ -58,7 +53,7 @@ int main() {
     cam.focus_dist = 10.0;
 
     auto render_start = high_resolution_clock::now();
-    cam.render(world_node);
+    cam.render(world);
     auto render_time = high_resolution_clock::now() - render_start;
 
     auto total_time_elapsed = high_resolution_clock::now() - total_time;

@@ -57,12 +57,10 @@ class triangle : public hittable {
     }
 
     void calc_bounds() {
-        bounds = bounding_box(a, a);
-        bounds.expand_to_contain(b);
-        bounds.expand_to_contain(c);
+        min = vec_min(a, vec_min(b, c));
+        max = vec_max(a, vec_max(b, c));
 
-        min = bounds.min;
-        max = bounds.max;
+        bounds = bounding_box(min, max);
 
         origin = (min + max) / 2;
         edgeAB = b - a;

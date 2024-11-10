@@ -1,6 +1,7 @@
 #ifndef NODE_H
 #define NODE_H
 
+#include <climits>
 #include <memory>
 #include <vector>
 
@@ -15,22 +16,12 @@ class node {
         for (auto& tri : tris)
             children.add(tri);
 
-        childA = NULL;
-        childB = NULL;
         bounds = children.get_bounds();
-        if (this->children.objects.size() > 1 && splitDepth < MAX_SPLIT_DEPTH)
-            split();
-
-        bounds.calc_points();
+        init();
     }
 
     node(hittable_list children, int splitDepth) : bounds(children.get_bounds()), children(children), splitDepth(splitDepth) {
-        childA = NULL;
-        childB = NULL;
-        if (this->children.objects.size() > 1 && splitDepth < MAX_SPLIT_DEPTH)
-            split();
-
-        bounds.calc_points();
+        init();
     }
 
     bounding_box bounds;
@@ -66,12 +57,10 @@ class node {
             return hit_near;
         }
 
-        if (children.objects.size() == 1060 && !childA || !childB) {
-            rec.mat = MISSING_TEXTURE_MAT;
+        if (children.hit(r, ray_t, rec))
             return true;
-        }
 
-        return children.hit(r, ray_t, rec);
+        return false;
     }
 
     void move_origin(vec3 offset) {
@@ -94,35 +83,68 @@ class node {
    private:
     static const int MAX_SPLIT_DEPTH = 32;
     int splitDepth = 0;
+
+    void init() {
+        // Make sure the bounds are not a plane
+        if (bounds.min.x() == bounds.max.x())
+            bounds.max.setX(bounds.max.x() + 0.0001);
+        if (bounds.min.y() == bounds.max.y())
+            bounds.max.setY(bounds.max.y() + 0.0001);
+        if (bounds.min.z() == bounds.max.z())
+            bounds.max.setZ(bounds.max.z() + 0.0001);
+
+        childA = NULL;
+        childB = NULL;
+        if (this->children.objects.size() > 1 && splitDepth < MAX_SPLIT_DEPTH)
+            split();
+
+        bounds.calc_points();
+    }
+
     void split() {
-        int longestAxis = bounds.get_longest_axis();
-        double splitPoint = (bounds.min.e[longestAxis] + bounds.max.e[longestAxis]) / 2;
+        // Try all axis
+        int longestAxis = -1;
+        int difference = INT_MAX;
+        int winnerLeftCount = 0;
+        int winnerRightCount = 0;
+        for (int i = 0; i < 3; i++) {
+            double splitPoint = (bounds.min[i] + bounds.max[i]) / 2;
+            int leftCount = 0;
+            int rightCount = 0;
 
-        hittable_list aList = hittable_list();
-        hittable_list bList = hittable_list();
+            for (const auto& object : children.objects)
+                if (object->origin[i] < splitPoint)
+                    leftCount++;
+                else
+                    rightCount++;
 
-        if (children.objects.size() == 1333)
-            std::cerr << "About to split " << children.objects.size() << " objects, on axis: (" << longestAxis << ") at " << splitPoint << "\n";
+            if (leftCount > 0 && rightCount > 0) {
+                int diff = std::abs(leftCount - rightCount);
+                if (diff < difference) {
+                    difference = diff;
+                    longestAxis = i;
+                    winnerLeftCount = leftCount;
+                    winnerRightCount = rightCount;
+                }
+            }
+        }
 
-        for (const auto& object : children.objects) {
+        if (longestAxis == -1) {
+            return;
+        }
+
+        double splitPoint = (bounds.min[longestAxis] + bounds.max[longestAxis]) / 2;
+        hittable_list aList;
+        hittable_list bList;
+
+        for (const auto& object : children.objects)
             if (object->origin[longestAxis] < splitPoint)
                 aList.add(object);
             else
                 bList.add(object);
-        }
 
-        // All nodes were in one child, this was not a useful split
-        if (aList.objects.size() == 0 || bList.objects.size() == 0) {
-            if (children.objects.size() > 1000) {
-                std::cerr << "Useless split... Settling with " << children.objects.size() << " objects\n";
-                // print all children out
-                for (const auto& object : children.objects) {
-                    std::cerr << object->origin << "\n";
-                }
-                exit(1);
-            }
+        if (aList.objects.size() == 0 || bList.objects.size() == 0)
             return;
-        }
 
         childA = std::make_unique<node>(aList, splitDepth + 1);
         childB = std::make_unique<node>(bList, splitDepth + 1);

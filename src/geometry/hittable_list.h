@@ -37,6 +37,11 @@ class hittable_list : public hittable {
     }
 
     bounding_box get_bounds() const override {
+        if (objects.empty()) {
+            std::cerr << "No objects in hittable_list\n";
+            exit(1);
+        }
+
         bounding_box box = objects[0]->get_bounds();
         for (const auto& object : objects)
             box.expand_to_contain(object->get_bounds());
