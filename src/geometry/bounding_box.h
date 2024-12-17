@@ -92,10 +92,7 @@ class bounding_box {
             tmax = std::min(tmax, std::max(std::max(t1, t2), tmin));
         }
 
-        if (tmin < 0)
-            return -1;
-
-        return tmax >= tmin ? tmin : -1;
+        return tmax > std::max(tmin, 0.0) && tmax > 0 ? tmin : -1;
     }
 
     void calc_points() {

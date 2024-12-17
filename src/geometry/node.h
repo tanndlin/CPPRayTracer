@@ -85,13 +85,13 @@ class node {
     int splitDepth = 0;
 
     void init() {
-        // // Make sure the bounds are not a plane
-        // if (bounds.min.x() == bounds.max.x())
-        //     bounds.max.setX(bounds.max.x() + 0.0001);
-        // if (bounds.min.y() == bounds.max.y())
-        //     bounds.max.setY(bounds.max.y() + 0.0001);
-        // if (bounds.min.z() == bounds.max.z())
-        //     bounds.max.setZ(bounds.max.z() + 0.0001);
+        // Make sure the bounds are not a plane
+        if (bounds.min.x() == bounds.max.x())
+            bounds.max.setX(bounds.max.x() + 0.0001);
+        if (bounds.min.y() == bounds.max.y())
+            bounds.max.setY(bounds.max.y() + 0.0001);
+        if (bounds.min.z() == bounds.max.z())
+            bounds.max.setZ(bounds.max.z() + 0.0001);
 
         childA = NULL;
         childB = NULL;
