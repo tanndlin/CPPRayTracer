@@ -48,7 +48,6 @@ int main() {
     cam.lookfrom = point3(13, 3, 13);
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
-
     cam.defocus_angle = 0.0;
     cam.focus_dist = 10.0;
 

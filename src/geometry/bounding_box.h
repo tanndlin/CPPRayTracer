@@ -9,8 +9,8 @@ class bounding_box {
     point3 max;
 
     bounding_box() : min(point3()), max(point3()) {}
-    bounding_box(point3 p) : min(p), max(p) {}
-    bounding_box(point3 a, point3 b) : min(a), max(b) {
+    bounding_box(const point3& p) : min(p), max(p) {}
+    bounding_box(const point3& a, const point3& b) : min(a), max(b) {
         // Make sure a is the minimum point and b is the maximum point
         if (min.x() > max.x()) {
             double temp = min.x();
@@ -31,7 +31,7 @@ class bounding_box {
         }
     }
 
-    bool contains(point3 p) {
+    bool contains(const point3& p) {
         auto xInterval = interval(min.x(), max.x());
         auto yInterval = interval(min.y(), max.y());
         auto zInterval = interval(min.z(), max.z());
@@ -39,7 +39,7 @@ class bounding_box {
         return xInterval.contains(p.x()) && yInterval.contains(p.y()) && zInterval.contains(p.z());
     }
 
-    bool overlaps(bounding_box other) {
+    bool overlaps(const bounding_box& other) {
         bool overlapsX = min.x() <= other.max.x() && max.x() >= other.min.x();
         bool overlapsY = min.y() <= other.max.y() && max.y() >= other.min.y();
         bool overlapsZ = min.z() <= other.max.z() && max.z() >= other.min.z();
@@ -47,12 +47,12 @@ class bounding_box {
         return overlapsX && overlapsY && overlapsZ;
     }
 
-    void expand_to_contain(bounding_box other) {
+    void expand_to_contain(const bounding_box& other) {
         min = vec_min(min, other.min);
         max = vec_max(max, other.max);
     }
 
-    void expand_to_contain(point3 p) {
+    void expand_to_contain(const point3& p) {
         min = vec_min(min, p);
         max = vec_max(max, p);
     }
@@ -70,7 +70,7 @@ class bounding_box {
         return 2;
     }
 
-    void offset(vec3 offset) {
+    void offset(const vec3& offset) {
         min += offset;
         max += offset;
 

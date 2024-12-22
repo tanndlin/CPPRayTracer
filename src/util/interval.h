@@ -9,7 +9,7 @@ class interval {
 
     interval() : min(+infinity), max(-infinity) {}  // Default interval is empty
 
-    interval(double min, double max) : min(min), max(max) {
+    interval(double pMin, double pMax) : min(pMin), max(pMax) {
         if (min > max) {
             double temp = max;
             max = min;

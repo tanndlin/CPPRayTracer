@@ -1,5 +1,8 @@
 set shell := ["cmd.exe", "/c"]
 
+analyze:
+    cppcheck --check-level=exhaustive --cppcheck-build-dir=b --language=c++ src
+
 build:
     g++ -O3 src\\main.cpp -o main
 

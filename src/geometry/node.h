@@ -12,8 +12,8 @@
 
 class node {
    public:
-    node(std::vector<shared_ptr<triangle>>& tris, int splitDepth) : bounds(), children(), splitDepth(splitDepth) {
-        for (auto& tri : tris)
+    node(const std::vector<shared_ptr<triangle>>& tris, int splitDepth) : bounds(), children(), splitDepth(splitDepth) {
+        for (const auto& tri : tris)
             children.add(tri);
 
         bounds = children.get_bounds();
@@ -38,8 +38,8 @@ class node {
             double distA = childA->bounds.hit(r);
             double distB = childB->bounds.hit(r);
 
-            node* near = distA < distB ? childA.get() : childB.get();
-            node* far = distA < distB ? childB.get() : childA.get();
+            const node* near = distA < distB ? childA.get() : childB.get();
+            const node* far = distA < distB ? childB.get() : childA.get();
 
             bool hit_near = false;
             double closest_so_far = ray_t.max;
@@ -63,7 +63,7 @@ class node {
         return false;
     }
 
-    void move_origin(vec3 offset) {
+    void move_origin(const vec3& offset) {
         bounds.offset(offset);
 
         if (childA) childA->move_origin(offset);
@@ -105,8 +105,6 @@ class node {
         // Try all axis
         int longestAxis = -1;
         int difference = INT_MAX;
-        int winnerLeftCount = 0;
-        int winnerRightCount = 0;
         for (int i = 0; i < 3; i++) {
             double splitPoint = (bounds.min[i] + bounds.max[i]) / 2;
             int leftCount = 0;
@@ -123,8 +121,6 @@ class node {
                 if (diff < difference) {
                     difference = diff;
                     longestAxis = i;
-                    winnerLeftCount = leftCount;
-                    winnerRightCount = rightCount;
                 }
             }
         }

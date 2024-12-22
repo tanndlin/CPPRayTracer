@@ -39,7 +39,7 @@ class mesh : public hittable {
         return box;
     }
 
-    void set_origin(point3 p) {
+    void set_origin(const point3& p) {
         point3 oldPos = origin;
         origin = p;
         point3 offset = origin - oldPos;
