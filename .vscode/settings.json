@@ -1,6 +1,10 @@
 {
     "files.associations": {
+        "*.config": "plaintext",
+        "*.razor": "html",
+        "*.json": "jsonc",
         "*.h": "cpp",
+        "future": "cpp"
     },
     "restoreTerminals.terminals": [
         {

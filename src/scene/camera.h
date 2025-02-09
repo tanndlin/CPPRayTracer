@@ -1,6 +1,9 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <future>
+#include <thread>
+
 #include "../geometry/hittable.h"
 #include "../geometry/node.h"
 #include "../scene/material.h"
@@ -26,18 +29,43 @@ class camera {
         std::cout << "P3\n"
                   << image_width << ' ' << image_height << "\n255\n";
 
+        auto futures = new std::future<color>**[image_height];
+        for (int j = 0; j < image_height; j++) {
+            futures[j] = new std::future<color>*[image_width];
+            for (int i = 0; i < image_width; i++) {
+                futures[j][i] = new std::future<color>[samples_per_pixel];
+            }
+        }
+
+        for (int j = 0; j < image_height; j++) {
+            std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
+            for (int i = 0; i < image_width; i++) {
+                for (int sample = 0; sample < samples_per_pixel; sample++) {
+                    ray r = get_ray(i, j);
+                    auto future = std::async(std::launch::async, &camera::ray_color, this, r, max_depth, std::ref(world));
+                    futures[j][i][sample] = std::move(future);
+                }
+            }
+        }
+
         for (int j = 0; j < image_height; j++) {
             std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
             for (int i = 0; i < image_width; i++) {
                 color pixel_color(0, 0, 0);
                 for (int sample = 0; sample < samples_per_pixel; sample++) {
-                    ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, max_depth, world);
+                    pixel_color += futures[j][i][sample].get();
                 }
-
                 write_color(std::cout, pixel_samples_scale * pixel_color);
             }
         }
+
+        for (int j = 0; j < image_height; j++) {
+            for (int i = 0; i < image_width; i++) {
+                delete[] futures[j][i];
+            }
+            delete[] futures[j];
+        }
+        delete[] futures;
 
         std::clog << "\rDone.                 \n";
     }
