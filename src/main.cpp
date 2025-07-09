@@ -19,8 +19,8 @@ int main() {
 
     hittable_list world;
 
-    // auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
-    // world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
+    auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+    world.add(make_shared<sphere>(point3(0, -1002, 0), 1000, ground_material));
 
     // shared_ptr<mesh> m1 = readFile("funnel.obj");
     shared_ptr<mesh> m2 = readFile("objs/Chess.obj");
@@ -41,10 +41,10 @@ int main() {
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1600;
-    cam.samples_per_pixel = 100;
-    cam.max_depth = 2;
+    cam.samples_per_pixel = 10;
+    cam.max_depth = 10;
 
-    cam.vfov = 45;
+    cam.vfov = 30;
     cam.lookfrom = point3(13, 3, 13);
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
