@@ -25,7 +25,7 @@ int main() {
     // shared_ptr<mesh> m1 = readFile("funnel.obj");
     shared_ptr<mesh> m2 = readFile("objs/Chess.obj");
     auto readFileTime = high_resolution_clock::now() - total_time;
-    std::cerr << "Read file time: " << duration_cast<milliseconds>(readFileTime).count() << "ms\n";
+    std::clog << "Read file time: " << duration_cast<milliseconds>(readFileTime).count() << "ms\n";
     // world.add(m1);
     world.add(m2);
 
@@ -34,8 +34,8 @@ int main() {
     // m2->move_origin(point3(0, 0.1, 0));
     m2->scale(2);
     m2->set_material(make_shared<lambertian>(color(.5, .2, .7)));
-    std::cerr << "Total hittable count: " << m2->bvh.children.objects.size() << "\n";
-    std::cerr << "Largest BVH size: " << m2->bvh.get_largest_bvh() << "\n";
+    std::clog << "Total hittable count: " << m2->bvh.children.objects.size() << "\n";
+    std::clog << "Largest BVH size: " << m2->bvh.get_largest_bvh() << "\n\n";
 
     camera cam;
 
@@ -53,10 +53,6 @@ int main() {
 
     auto render_start = high_resolution_clock::now();
     cam.render(world);
-    auto render_time = high_resolution_clock::now() - render_start;
-
     auto total_time_elapsed = high_resolution_clock::now() - total_time;
-
-    std::cerr << "Render time: " << duration_cast<milliseconds>(render_time).count() << "ms\n";
-    std::cerr << "Total time: " << duration_cast<milliseconds>(total_time_elapsed).count() << "ms\n";
+    std::clog << "Total time: " << duration_cast<milliseconds>(total_time_elapsed).count() << "ms\n";
 }

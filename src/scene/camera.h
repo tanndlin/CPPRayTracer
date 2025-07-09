@@ -32,7 +32,7 @@ class camera {
 
         auto render_start = high_resolution_clock::now();
         std::vector<color> frameBuffer(image_width * image_height);
-        int tile_size = 64;                              // Size of each tile in pixels
+        int tile_size = 32;                              // Size of each tile in pixels
         int thread_pixel_count = tile_size * tile_size;  // Number of pixels to render per thread
         ThreadPool threadPool;
         threadPool.Start();
@@ -68,11 +68,16 @@ class camera {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         threadPool.Stop();
-        std::clog << "\rCalculation time: " << duration_cast<milliseconds>(high_resolution_clock::now() - render_start).count() << "ms          \n";
+        auto render_time = high_resolution_clock::now() - render_start;
 
         auto write_start = high_resolution_clock::now();
         write_framebuffer(std::cout, frameBuffer, image_width, image_height);
-        std::clog << "Write time: " << duration_cast<milliseconds>(high_resolution_clock::now() - write_start).count() << "ms\n";
+        std::clog << "\rRender time: " << duration_cast<milliseconds>(high_resolution_clock::now() - render_start).count() << "ms               \n";
+        std::clog << "-Calculation time: " << duration_cast<milliseconds>(render_time).count() << "ms\n";
+        double numTiles = ceil(double(image_height * image_width) / (tile_size * tile_size));
+        double msPerTile = duration_cast<milliseconds>(render_time).count() / numTiles;
+        std::clog << "-ms per tile: " << msPerTile << "ms\n";
+        std::clog << "-Write time: " << duration_cast<milliseconds>(high_resolution_clock::now() - write_start).count() << "ms\n\n";
     }
 
    private:

@@ -20,10 +20,10 @@ class ThreadPool {
         }
     }
 
-    void QueueJob(const std::function<void()>& job) {
+    void QueueJob(std::function<void()> job) {
         {
             std::unique_lock<std::mutex> lock(queue_mutex);
-            jobs.push(job);
+            jobs.push(std::move(job));
         }
         mutex_condition.notify_one();
     }
