@@ -22,27 +22,30 @@ int main() {
     auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
     world.add(make_shared<sphere>(point3(0, -1002, 0), 1000, ground_material));
 
-    // shared_ptr<mesh> m1 = readFile("funnel.obj");
-    shared_ptr<mesh> m2 = readFile("objs/Chess.obj");
     auto readFileTime = high_resolution_clock::now() - total_time;
-    std::clog << "Read file time: " << duration_cast<milliseconds>(readFileTime).count() << "ms\n";
-    // world.add(m1);
-    world.add(m2);
 
+    // shared_ptr<mesh> m1 = readFile("objs/funnel.obj");
     // m1->set_origin(point3(2, 0, 0));
     // m1->set_material(make_shared<lambertian>(color(0, 1, 0)));
-    // m2->move_origin(point3(0, 0.1, 0));
-    m2->scale(2);
+    // world.add(m1);
+
+    shared_ptr<mesh> m2 = readFile("objs/Chess.obj");
+    m2->move_origin(point3(0, 0.1, 0));
+    m2->scale(vec3(-2, 2, 2));
     m2->set_material(make_shared<lambertian>(color(.5, .2, .7)));
+    world.add(m2);
+
+    std::clog << "Read file time: " << duration_cast<milliseconds>(readFileTime).count() << "ms\n";
     std::clog << "Total hittable count: " << m2->bvh.children.objects.size() << "\n";
     std::clog << "Largest BVH size: " << m2->bvh.get_largest_bvh() << "\n\n";
 
     camera cam;
 
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 1600;
+    cam.image_width = 1920;
     cam.samples_per_pixel = 10;
     cam.max_depth = 10;
+    cam.tile_size = 32;
 
     cam.vfov = 30;
     cam.lookfrom = point3(13, 3, 13);

@@ -18,6 +18,7 @@ class camera {
     int image_width = 100;       // Rendered image width in pixel count
     int samples_per_pixel = 10;  // Count of random samples for each pixel
     int max_depth = 10;          // Maximum number of ray bounces into scene
+    int tile_size = 16;          // Size of each tile in pixels
 
     double vfov = 90;                   // Vertical view angle (field of view)
     point3 lookfrom = point3(0, 0, 0);  // Point camera is looking from
@@ -32,7 +33,6 @@ class camera {
 
         auto render_start = high_resolution_clock::now();
         std::vector<color> frameBuffer(image_width * image_height);
-        int tile_size = 32;                              // Size of each tile in pixels
         int thread_pixel_count = tile_size * tile_size;  // Number of pixels to render per thread
         ThreadPool threadPool;
         threadPool.Start();
