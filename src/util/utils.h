@@ -6,6 +6,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <random>
 
 // C++ Std Usings
 
@@ -24,9 +25,19 @@ inline double degrees_to_radians(double degrees) {
     return degrees * pi / 180.0;
 }
 
+static std::mt19937& global_rng() {
+    thread_local std::mt19937 rng{[] {
+        std::random_device rd;
+        std::seed_seq ss{rd(), rd(), rd(), rd()};
+        return std::mt19937{ss};
+    }()};
+    return rng;
+}
+
 inline double random_double() {
     // Returns a random real in [0,1).
-    return std::rand() / (RAND_MAX + 1.0);
+    static std::uniform_real_distribution<double> distribution(0.0, 1.0);  // Define the range
+    return distribution(global_rng());
 }
 
 inline double random_double(double min, double max) {
