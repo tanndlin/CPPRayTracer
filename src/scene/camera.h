@@ -1,12 +1,16 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <chrono>
 #include <future>
 #include <thread>
 
 #include "../geometry/hittable.h"
 #include "../geometry/node.h"
 #include "../scene/material.h"
+#include "../util/thread_pool.h"
+
+using namespace std::chrono;
 
 class camera {
    public:
@@ -26,38 +30,49 @@ class camera {
     void render(const hittable& world) {
         initialize();
 
-        std::cout << "P3\n"
-                  << image_width << ' ' << image_height << "\n255\n";
+        auto render_start = high_resolution_clock::now();
+        std::vector<color> frameBuffer(image_width * image_height);
+        int tile_size = 64;                              // Size of each tile in pixels
+        int thread_pixel_count = tile_size * tile_size;  // Number of pixels to render per thread
+        ThreadPool threadPool;
+        threadPool.Start();
 
-        auto futures = new std::future<color*>[image_height];
+        int pixels_queued = 0;
+        while (pixels_queued < image_height * image_width) {
+            // Queue a job to render thread_pixel_count pixels
+            if (pixels_queued + thread_pixel_count <= image_height * image_width) {
+                threadPool.QueueJob([this, &world, &frameBuffer, pixels_queued, thread_pixel_count]() {
+                    for (int z = 0; z < thread_pixel_count; z++) {
+                        int pixel_index = pixels_queued + z;
+                        int i = pixel_index % image_width;
+                        int j = pixel_index / image_width;
 
-        for (int j = 0; j < image_height; j++) {
-            futures[j] = std::async(std::launch::async, [this, j, &world]() {
-                auto row_colors = new color[image_width];
-                for (int i = 0; i < image_width; i++) {
-                    color pixel_color(0, 0, 0);
-                    for (int sample = 0; sample < samples_per_pixel; sample++) {
-                        ray r = get_ray(i, j);
-                        pixel_color += ray_color(r, max_depth, world);
+                        color pixel_color(0, 0, 0);
+                        for (int sample = 0; sample < samples_per_pixel; sample++) {
+                            ray r = get_ray(i, j);
+                            pixel_color += ray_color(r, max_depth, world);
+                        }
+                        frameBuffer[pixel_index] = pixel_samples_scale * pixel_color;
                     }
-                    row_colors[i] = pixel_samples_scale * pixel_color;
-                }
-                return row_colors;
-            });
+                });
+                pixels_queued += thread_pixel_count;
+            } else {
+                // If there are < thread_pixel_count pixels remaining, adjust the count
+                int pixels_remaining = image_height * image_width - pixels_queued;
+                thread_pixel_count = pixels_remaining;
+            }
         }
 
-        for (int j = 0; j < image_height; j++) {
-            std::clog << "\rScanlines remaining: " << image_height - j << ' ' << std::flush;
-            color* row_colors = futures[j].get();
-            for (int i = 0; i < image_width; i++)
-                write_color(std::cout, row_colors[i]);
-
-            delete[] row_colors;
+        while (int thread_count = threadPool.size()) {
+            std::clog << "\rRendering... " << thread_count << " tiles remaining.";
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
+        threadPool.Stop();
+        std::clog << "\rCalculation time: " << duration_cast<milliseconds>(high_resolution_clock::now() - render_start).count() << "ms          \n";
 
-        delete[] futures;
-
-        std::clog << "\rDone.                 \n";
+        auto write_start = high_resolution_clock::now();
+        write_framebuffer(std::cout, frameBuffer, image_width, image_height);
+        std::clog << "Write time: " << duration_cast<milliseconds>(high_resolution_clock::now() - write_start).count() << "ms\n";
     }
 
    private:

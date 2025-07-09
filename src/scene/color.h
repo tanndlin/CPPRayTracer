@@ -33,4 +33,16 @@ void write_color(std::ostream& out, const color& pixel_color) {
     out << rbyte << ' ' << gbyte << ' ' << bbyte << '\n';
 }
 
+void write_framebuffer(
+    std::ostream& out, const std::vector<color>& frameBuffer, int image_width, int image_height) {
+    // Write the PPM header.
+    out << "P3\n"
+        << image_width << ' ' << image_height << "\n255\n";
+
+    // Write the pixel colors.
+    for (const auto& pixel_color : frameBuffer) {
+        write_color(out, pixel_color);
+    }
+}
+
 #endif
