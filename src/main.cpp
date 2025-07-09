@@ -22,8 +22,6 @@ int main() {
     auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
     world.add(make_shared<sphere>(point3(0, -1002, 0), 1000, ground_material));
 
-    auto readFileTime = high_resolution_clock::now() - total_time;
-
     // shared_ptr<mesh> m1 = readFile("objs/funnel.obj");
     // m1->set_origin(point3(2, 0, 0));
     // m1->set_material(make_shared<lambertian>(color(0, 1, 0)));
@@ -31,10 +29,11 @@ int main() {
 
     shared_ptr<mesh> m2 = readFile("objs/Chess.obj");
     m2->move_origin(point3(0, 0.1, 0));
-    m2->scale(vec3(-2, 2, 2));
+    m2->scale(vec3(2, 2, 2));
     m2->set_material(make_shared<lambertian>(color(.5, .2, .7)));
     world.add(m2);
 
+    auto readFileTime = high_resolution_clock::now() - total_time;
     std::clog << "Read file time: " << duration_cast<milliseconds>(readFileTime).count() << "ms\n";
     std::clog << "Total hittable count: " << m2->bvh.children.objects.size() << "\n";
     std::clog << "Largest BVH size: " << m2->bvh.get_largest_bvh() << "\n\n";
