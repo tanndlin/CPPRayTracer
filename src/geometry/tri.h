@@ -13,8 +13,7 @@ class triangle : public hittable {
     point3 min;
     point3 max;
 
-    triangle(const point3& a, const point3& b, const point3& c) : a(a), b(b), c(c) {
-        mat = MISSING_TEXTURE_MAT;
+    triangle(const point3& a, const point3& b, const point3& c, const std::string& mat_name) : a(a), b(b), c(c), mat_name(mat_name) {
         calc_bounds();
     }
 
@@ -49,7 +48,7 @@ class triangle : public hittable {
         rec.t = dst;
         rec.p = r.at(rec.t);
         rec.set_face_normal(r, normal);
-        rec.mat = mat;
+        rec.mat = get_material(mat_name);
 
         return true;
     }
@@ -70,7 +69,7 @@ class triangle : public hittable {
         normal = cross(edgeAB, edgeAC);
     }
 
-    void set_material(shared_ptr<material> m) { mat = m; }
+    void set_material(std::string name) { mat_name = name; }
 
     void move_origin(const vec3& offset) override {
         a += offset;
@@ -101,7 +100,8 @@ class triangle : public hittable {
     }
 
    private:
-    shared_ptr<material> mat;
+    // shared_ptr<material> mat;
+    std::string mat_name;
     bounding_box bounds;
 
     point3 edgeAB;

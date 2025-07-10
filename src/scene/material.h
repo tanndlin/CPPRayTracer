@@ -1,6 +1,8 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
+#include <map>
+
 #include "../geometry/hittable.h"
 
 class material {
@@ -90,6 +92,27 @@ class dielectric : public material {
     }
 };
 
-shared_ptr<material> MISSING_TEXTURE_MAT = make_shared<lambertian>(color(1, 0, 1));
+std::map<std::string, shared_ptr<material>> MATERIALS = {
+    {"missing_texture", make_shared<lambertian>(color(1, 0, 1))},
+    // Add more materials here as needed.
+};
+
+inline shared_ptr<material> get_material(const std::string& name) {
+    // Returns the material with the given name, or the missing texture material if not found.
+    auto it = MATERIALS.find(name);
+    if (it != MATERIALS.end())
+        return it->second;
+
+    return MATERIALS["missing_texture"];
+}
+
+inline void add_material(const std::string& name, shared_ptr<material> mat) {
+    // Adds a material to the MATERIALS map.
+    if (MATERIALS.find(name) == MATERIALS.end()) {
+        MATERIALS[name] = mat;
+    } else {
+        std::cerr << "Material with name '" << name << "' already exists. Skipping addition.\n";
+    }
+}
 
 #endif

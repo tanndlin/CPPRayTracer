@@ -1,6 +1,7 @@
 #ifndef READER_H
 #define READER_H
 
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -23,7 +24,63 @@ void handleVertex(std::vector<point3>& vertices, const std::string& line) {
     vertices.push_back(point3(x, y, z));
 }
 
-void handleFace(std::vector<point3>& vertices, std::vector<shared_ptr<triangle>>& tris, const std::string& line) {
+void handleParseMaterial(std::ifstream& file, const std::string& mat_name) {
+    // This function can be expanded to handle more material properties if needed
+    // For now, we just print the material name
+    std::clog << "Parsing material: " << mat_name << '\n';
+
+    /*
+    Ns
+    Ka
+    Kd
+    Ks
+    Ke
+    Ni
+    d
+    illum
+    */
+
+    for (int i = 0; i < 8; i++) {
+        std::string line;
+        if (!std::getline(file, line)) {
+            throw std::runtime_error("Unexpected end of material file while parsing material: " + mat_name);
+        }
+
+        // Here you can parse the material properties as needed
+        // For now, we just print the line
+        std::clog << "Material property: " << line << '\n';
+        if (line.rfind("Ka", 0) == 0) {
+        }
+        if (line.rfind("Kd", 0) == 0) {
+            std::istringstream ss(line.substr(3));
+            double r, g, b;
+            if (!(ss >> r >> g >> b)) {
+                throw std::runtime_error("Failed to parse Kd color in material: " + mat_name);
+            }
+            add_material(mat_name, make_shared<lambertian>(color(r, g, b)));
+        }
+    }
+}
+
+void handleMaterialFile(const std::filesystem::path& path) {
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open material file: " + path.string());
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        // Process the material file line by line
+        if (line.rfind("newmtl ", 0) == 0) {
+            handleParseMaterial(file, line.substr(7));
+        }
+        // You can add more processing for other material properties if needed
+    }
+
+    file.close();
+}
+
+void handleFace(const std::vector<point3>& vertices, std::vector<shared_ptr<triangle>>& tris, const std::string& line, const std::string& mat_name) {
     std::istringstream stream(line);
     std::string triplet;
     int indices[3];
@@ -50,11 +107,10 @@ void handleFace(std::vector<point3>& vertices, std::vector<shared_ptr<triangle>>
     point3 c = vertices[indices[2]];
 
     // Create and store the triangle
-    tris.push_back(make_shared<triangle>(a, b, c));
+    tris.push_back(make_shared<triangle>(a, b, c, mat_name));
 }
 
 inline shared_ptr<mesh> readFile(std::string fileName) {
-    auto mat = make_shared<lambertian>(color(0.4, 0.2, 0.1));
     std::vector<point3> vertices;
     std::vector<shared_ptr<triangle>> tris;
 
@@ -63,21 +119,34 @@ inline shared_ptr<mesh> readFile(std::string fileName) {
         throw std::runtime_error("Failed to open file: " + fileName);
     }
 
+    std::filesystem::path filePath(fileName);
     std::string line;
+    std::string mat_name = "missing_texture";
+
     while (std::getline(file, line)) {
         if (line.rfind("v ", 0) == 0)
             handleVertex(vertices, line.substr(2));
+
         // if (line.rfind("vn ", 0) == 0)
         //     handleVertex(vertices, line.substr(3));
+
         // if (line.rfind("vt ", 0) == 0)
         //     handleVertex(vertices, line.substr(3));
+
+        if (line.rfind("mtllib ", 0) == 0)
+            // File name is the filename plus the current directory
+            handleMaterialFile(filePath.parent_path() / line.substr(7));
+
+        if (line.rfind("usemtl", 0) == 0)
+            mat_name = line.substr(7);
+
         if (line.rfind("f ", 0) == 0)
-            handleFace(vertices, tris, line.substr(2));
+            handleFace(vertices, tris, line.substr(2), mat_name);
     }
 
     file.close();
 
-    return make_shared<mesh>(tris, mat);
+    return make_shared<mesh>(tris);
 }
 
 #endif

@@ -18,11 +18,9 @@ class mesh : public hittable {
         origin = point3();
     }
 
-    mesh(std::vector<shared_ptr<triangle>>& tris, shared_ptr<material> mat) : bvh(tris, 0), tris(tris), mat(mat) {
+    mesh(std::vector<shared_ptr<triangle>>& tris, const std::string& mat_name) : bvh(tris, 0), tris(tris) {
         origin = point3();
-        for (auto& tri : tris) {
-            tri->set_material(mat);
-        }
+        set_material(mat_name);
     }
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
@@ -51,10 +49,10 @@ class mesh : public hittable {
         bvh.move_origin(offset);
     }
 
-    void set_material(shared_ptr<material> m) {
-        mat = m;
+    void set_material(std::string name) {
+        mat_name = name;
         for (auto& tri : tris) {
-            tri->set_material(m);
+            tri->set_material(name);
         }
     }
 
@@ -71,6 +69,8 @@ class mesh : public hittable {
     }
 
     void rotate(double angle, const vec3& axis) {
+        if (angle <= 0) return;
+
         for (auto& tri : tris) {
             tri->rotate(angle, origin, axis);
         }
@@ -79,7 +79,8 @@ class mesh : public hittable {
     }
 
    private:
-    shared_ptr<material> mat;
+    // shared_ptr<material> mat;
+    std::string mat_name = "missing_texture";  // Default material name
 
     void calculate_bvh() {
         bvh = node(tris, 0);

@@ -4,7 +4,9 @@
         "*.razor": "html",
         "*.json": "jsonc",
         "*.h": "cpp",
-        "future": "cpp"
+        "*.rws": "xml",
+        "future": "cpp",
+        "filesystem": "cpp"
     },
     "restoreTerminals.terminals": [
         {
