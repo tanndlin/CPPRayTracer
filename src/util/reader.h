@@ -24,6 +24,21 @@ void handleVertex(std::vector<point3>& vertices, const std::string& line) {
     vertices.push_back(point3(x, y, z));
 }
 
+void handleVertexTexture(std::vector<point3>& uvs, const std::string& line) {
+    std::istringstream stream(line);
+    double u, v;
+
+    // Read the two double values from the line
+    if (!(stream >> u >> v)) {
+        // Handle error if parsing fails
+        throw std::runtime_error("Failed to parse texture vertex line: " + line);
+    }
+
+    // For now, we just log the texture coordinates
+    std::clog << "Texture vertex: (" << u << ", " << v << ")\n";
+    uvs.push_back(point3(u, v, 0));
+};
+
 void handleParseMaterial(std::ifstream& file, const std::string& mat_name) {
     // This function can be expanded to handle more material properties if needed
     // For now, we just print the material name
@@ -40,10 +55,10 @@ void handleParseMaterial(std::ifstream& file, const std::string& mat_name) {
     illum
     */
 
-    for (int i = 0; i < 8; i++) {
+    while (true) {
         std::string line;
-        if (!std::getline(file, line)) {
-            throw std::runtime_error("Unexpected end of material file while parsing material: " + mat_name);
+        if (!std::getline(file, line) || line.empty()) {
+            break;
         }
 
         // Here you can parse the material properties as needed
@@ -58,6 +73,13 @@ void handleParseMaterial(std::ifstream& file, const std::string& mat_name) {
                 throw std::runtime_error("Failed to parse Kd color in material: " + mat_name);
             }
             add_material(mat_name, make_shared<lambertian>(color(r, g, b)));
+        }
+        if (line.rfind("map_Kd", 0) == 0) {
+            std::string texture_file = line.substr(7);
+            // Here you can load the texture file if needed
+            // For now, we just print the texture file name
+            std::clog << "Texture file for " << mat_name << ": " << texture_file << '\n';
+            add_material(mat_name, make_shared<texture_lambertian>(texture_file));
         }
     }
 }
@@ -80,10 +102,16 @@ void handleMaterialFile(const std::filesystem::path& path) {
     file.close();
 }
 
-void handleFace(const std::vector<point3>& vertices, std::vector<shared_ptr<triangle>>& tris, const std::string& line, const std::string& mat_name) {
+void handleFace(
+    const std::vector<point3>& vertices,
+    const std::vector<point3>& uvs,
+    std::vector<shared_ptr<triangle>>& tris,
+    const std::string& line,
+    const std::string& mat_name) {
     std::istringstream stream(line);
     std::string triplet;
     int indices[3];
+    vec3 uvMappings[3];
 
     // Process each of the three triplets (v1, v2, v3)
     for (int i = 0; i < 3; ++i) {
@@ -91,14 +119,34 @@ void handleFace(const std::vector<point3>& vertices, std::vector<shared_ptr<tria
             throw std::runtime_error("Malformed line: expected three vertex indices.");
         }
 
-        // Find the first slash and extract the vertex index before it
-        size_t slash = triplet.find('/');
-        if (slash == std::string::npos) {
-            throw std::runtime_error("Malformed triplet: expected format 'v/t/n'.");
+        // Split the triplet by '/' to handle vertex and texture indices
+        std::istringstream tripletStream(triplet);
+        std::string vertexIndex, textureIndex;
+        if (!(std::getline(tripletStream, vertexIndex, '/') && std::getline(tripletStream, textureIndex, '/'))) {
+            throw std::runtime_error("Malformed triplet: " + triplet);
+        }
+        // Convert the vertex index to an integer
+        try {
+            indices[i] = std::stoi(vertexIndex) - 1;  // OBJ indices are 1-based, convert to 0-based
+        } catch (const std::invalid_argument& e) {
+            throw std::runtime_error("Invalid vertex index in triplet: " + triplet);
+        } catch (const std::out_of_range& e) {
+            throw std::runtime_error("Vertex index out of range in triplet: " + triplet);
         }
 
-        // Convert to integer and store in the indices array (subtracting 1 for zero-based index)
-        indices[i] = std::stoi(triplet.substr(0, slash)) - 1;
+        // Optionally handle texture indices if needed
+        if (!textureIndex.empty()) {
+            try {
+                int textureIndexValue = std::stoi(textureIndex) - 1;  // OBJ indices are 1-based, convert to 0-based
+                if (textureIndexValue < 0 || textureIndexValue >= static_cast<int>(uvs.size())) {
+                    throw std::out_of_range("Texture index out of range in triplet: " + triplet);
+                }
+
+                uvMappings[i] = uvs[textureIndexValue];
+            } catch (const std::invalid_argument& e) {
+                throw std::runtime_error("Invalid texture index in triplet: " + triplet);
+            }
+        }
     }
 
     // Retrieve vertices based on indices
@@ -107,11 +155,12 @@ void handleFace(const std::vector<point3>& vertices, std::vector<shared_ptr<tria
     point3 c = vertices[indices[2]];
 
     // Create and store the triangle
-    tris.push_back(make_shared<triangle>(a, b, c, mat_name));
+    tris.push_back(make_shared<triangle>(a, b, c, mat_name, uvMappings));
 }
 
 inline shared_ptr<mesh> readFile(std::string fileName) {
     std::vector<point3> vertices;
+    std::vector<point3> uvs;
     std::vector<shared_ptr<triangle>> tris;
 
     std::ifstream file(fileName);
@@ -130,8 +179,8 @@ inline shared_ptr<mesh> readFile(std::string fileName) {
         // if (line.rfind("vn ", 0) == 0)
         //     handleVertex(vertices, line.substr(3));
 
-        // if (line.rfind("vt ", 0) == 0)
-        //     handleVertex(vertices, line.substr(3));
+        if (line.rfind("vt ", 0) == 0)
+            handleVertexTexture(uvs, line.substr(3));
 
         if (line.rfind("mtllib ", 0) == 0)
             // File name is the filename plus the current directory
@@ -141,7 +190,7 @@ inline shared_ptr<mesh> readFile(std::string fileName) {
             mat_name = line.substr(7);
 
         if (line.rfind("f ", 0) == 0)
-            handleFace(vertices, tris, line.substr(2), mat_name);
+            handleFace(vertices, uvs, tris, line.substr(2), mat_name);
     }
 
     file.close();

@@ -11,7 +11,7 @@ image:
     main.exe > image.ppm
 
 watch:
-    nodemon -e cpp,h -x "just image"
+    nodemon -e cpp,h,obj,mtl -x "just image"
 
 watch-build:
-    nodemon -e cpp,h -x "just build"
+    nodemon -e cpp,h,obj,mtl -x "just build"

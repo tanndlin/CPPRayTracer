@@ -4,6 +4,7 @@
 #include <map>
 
 #include "../geometry/hittable.h"
+#include "../util/image.h"
 
 class material {
    public:
@@ -34,6 +35,22 @@ class lambertian : public material {
 
    private:
     color albedo;
+};
+
+class texture_lambertian : public material {
+   public:
+    texture_lambertian(const std::string& texture_file) : texture(texture_file) {}
+
+    bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
+        // For now, we just return a default color.
+        // In a real implementation, you would sample the texture based on rec.p.
+        attenuation = color(1.0, 1.0, 1.0);  // Default color
+        scattered = ray(rec.p, rec.normal);  // Scatter in the normal direction
+        return true;                         // Indicate that scattering occurred
+    }
+
+   private:
+    image texture;
 };
 
 class metal : public material {

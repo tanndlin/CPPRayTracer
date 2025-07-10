@@ -15,6 +15,17 @@ class triangle : public hittable {
 
     triangle(const point3& a, const point3& b, const point3& c, const std::string& mat_name) : a(a), b(b), c(c), mat_name(mat_name) {
         calc_bounds();
+
+        uvs[0] = point3(0, 0, 0);
+        uvs[1] = point3(1, 0, 0);
+        uvs[2] = point3(0, 1, 0);
+    }
+
+    triangle(const point3& a, const point3& b, const point3& c, const std::string& mat_name, vec3 uvs[]) : a(a), b(b), c(c), mat_name(mat_name) {
+        for (int i = 0; i < 3; ++i) {
+            this->uvs[i] = uvs[i];
+        }
+        calc_bounds();
     }
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
@@ -107,6 +118,7 @@ class triangle : public hittable {
     point3 edgeAB;
     point3 edgeAC;
     point3 normal;
+    point3 uvs[3];
 
     bool backface_culling_disabled = false;  // Set to true to disable backface culling
 };
