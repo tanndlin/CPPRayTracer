@@ -163,4 +163,27 @@ inline vec3 vec_max(const vec3& a, const vec3& b) {
     return vec3(fmax(a.x(), b.x()), fmax(a.y(), b.y()), fmax(a.z(), b.z()));
 }
 
+inline vec3 rotate_point(const point3& p, const point3& origin, double angle, const vec3& axis) {
+    vec3 v = p - origin;
+
+    // Normalize the rotation axis
+    vec3 k = unit_vector(axis);
+
+    // Compute rotated vector using Rodrigues' formula
+    vec3 rotated = v * cos(degrees_to_radians(angle)) +
+                   cross(k, v) * sin(degrees_to_radians(angle)) +
+                   k * dot(k, v) * (1 - cos(degrees_to_radians(angle)));
+
+    // Translate back to world space
+    point3 rotated_point = origin + rotated;
+    if (std::abs(rotated_point.x()) < 1e-8)
+        rotated_point.setX(0);
+    if (std::abs(rotated_point.y()) < 1e-8)
+        rotated_point.setY(0);
+    if (std::abs(rotated_point.z()) < 1e-8)
+        rotated_point.setZ(0);
+
+    return rotated_point;
+}
+
 #endif

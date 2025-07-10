@@ -22,8 +22,10 @@ class triangle : public hittable {
         point3 ao = r.origin() - a;
         point3 dao = cross(ao, r.direction());
 
+        // Backface culling
         double determinant = -dot(r.direction(), normal);
-        if (determinant < 1e-6)
+        if (!backface_culling_disabled && determinant < 1e-6)
+            // if (determinant < 1e-6)
             return false;
 
         double invDet = 1 / determinant;
@@ -86,6 +88,18 @@ class triangle : public hittable {
         calc_bounds();
     }
 
+    void rotate(double angle, const vec3& rot_origin, const vec3& axis) {
+        a = rotate_point(a, rot_origin, angle, axis);
+        b = rotate_point(b, rot_origin, angle, axis);
+        c = rotate_point(c, rot_origin, angle, axis);
+
+        calc_bounds();
+    }
+
+    void disable_backface_culling() {
+        backface_culling_disabled = true;
+    }
+
    private:
     shared_ptr<material> mat;
     bounding_box bounds;
@@ -93,6 +107,8 @@ class triangle : public hittable {
     point3 edgeAB;
     point3 edgeAC;
     point3 normal;
+
+    bool backface_culling_disabled = false;  // Set to true to disable backface culling
 };
 
 #endif

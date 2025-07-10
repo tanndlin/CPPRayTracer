@@ -70,6 +70,14 @@ class mesh : public hittable {
         calculate_bvh();
     }
 
+    void rotate(double angle, const vec3& axis) {
+        for (auto& tri : tris) {
+            tri->rotate(angle, origin, axis);
+        }
+
+        calculate_bvh();
+    }
+
    private:
     shared_ptr<material> mat;
 

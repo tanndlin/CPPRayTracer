@@ -8,13 +8,14 @@
 #include <thread>
 #include <vector>
 
+#define MULTITHEADING_ENABLED true
 class ThreadPool {
    public:
     // Takes in num threads and callback
     ThreadPool() {}
 
     void Start() {
-        const uint32_t num_threads = std::thread::hardware_concurrency();  // Max # of threads the system supports
+        const uint32_t num_threads = MULTITHEADING_ENABLED ? std::thread::hardware_concurrency() : 1;
         for (uint32_t ii = 0; ii < num_threads; ++ii) {
             threads.emplace_back(std::thread(&ThreadPool::ThreadLoop, this));
         }

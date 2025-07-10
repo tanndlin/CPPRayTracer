@@ -29,7 +29,8 @@ int main() {
 
     shared_ptr<mesh> m2 = readFile("objs/Chess.obj");
     m2->move_origin(point3(0, 0.1, 0));
-    m2->scale(vec3(2, 2, 2));
+    m2->scale(2);
+    m2->rotate(90, vec3(0, 1, 0));
     m2->set_material(make_shared<lambertian>(color(.5, .2, .7)));
     world.add(m2);
 
