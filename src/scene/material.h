@@ -2,6 +2,7 @@
 #define MATERIAL_H
 
 #include <map>
+#include <optional>
 
 #include "../geometry/hittable.h"
 #include "../util/image.h"
@@ -40,9 +41,29 @@ class lambertian : public material {
 class texture_lambertian : public material {
    public:
     texture_lambertian(const std::string& texture_file) : texture(texture_file) {}
+    texture_lambertian(const std::string& texture_file, const std::string& normal_file) : texture(texture_file), normal_texture(normal_file) {}
 
     bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
-        auto scatter_direction = rec.normal + random_unit_vector();
+        if (!normal_texture.has_value()) {
+            vec3 scatter_direction = rec.normal + random_unit_vector();
+
+            // Catch degenerate scatter direction
+            if (scatter_direction.near_zero())
+                scatter_direction = rec.normal;
+
+            scattered = ray(rec.p, scatter_direction);
+
+            // Sample the texture at the UV coordinates
+            attenuation = texture.sample(rec.u, rec.v);
+
+            return true;
+        }
+
+        // Use normal texture for bump mapping
+        vec3 normal = normal_texture->sample(rec.u, rec.v);
+        normal = unit_vector(normal * 2.0 - vec3(1.0, 1.0, 1.0));  // Convert to [-1, 1] range
+        vec3 scatter_direction = rec.normal + (normal * 1) + random_unit_vector();
+        scatter_direction = unit_vector(scatter_direction);
 
         // Catch degenerate scatter direction
         if (scatter_direction.near_zero())
@@ -56,8 +77,14 @@ class texture_lambertian : public material {
         return true;
     }
 
+    void set_normal(const std::string& normal_file) {
+        normal_texture = image(normal_file);
+    }
+
    private:
     image texture;
+    // Optional normal texture for bump mapping
+    std::optional<image> normal_texture;
 };
 
 class metal : public material {

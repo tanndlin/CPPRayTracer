@@ -9,6 +9,7 @@
 #include <vector>
 
 #define MULTITHEADING_ENABLED true
+
 class ThreadPool {
    public:
     // Takes in num threads and callback

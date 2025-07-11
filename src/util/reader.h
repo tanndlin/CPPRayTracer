@@ -40,16 +40,7 @@ void handleVertexTexture(std::vector<point3>& uvs, const std::string& line) {
 void handleParseMaterial(std::ifstream& file, const std::string& mat_name, const std::filesystem::path& directory) {
     std::clog << "Parsing material: " << mat_name << '\n';
 
-    /*
-    Ns
-    Ka
-    Kd
-    Ks
-    Ke
-    Ni
-    d
-    illum
-    */
+    shared_ptr<material> mat = nullptr;
 
     while (true) {
         std::string line;
@@ -68,7 +59,7 @@ void handleParseMaterial(std::ifstream& file, const std::string& mat_name, const
             if (!(ss >> r >> g >> b)) {
                 throw std::runtime_error("Failed to parse Kd color in material: " + mat_name);
             }
-            add_material(mat_name, make_shared<lambertian>(color(r, g, b)));
+            mat = make_shared<lambertian>(color(r, g, b));
         }
         if (line.rfind("map_Kd", 0) == 0) {
             std::string texture_file = line.substr(7);
@@ -78,9 +69,26 @@ void handleParseMaterial(std::ifstream& file, const std::string& mat_name, const
 
             std::filesystem::path path = directory / texture_file;
             std::clog << "Full texture path: " << path.string() << '\n';
-            add_material(mat_name, make_shared<texture_lambertian>(path.string()));
+            mat = make_shared<texture_lambertian>(path.string());
+        }
+        if (line.rfind("map_Bump", 0) == 0) {
+            std::string bump_file = line.substr(22);
+            // Here you can load the bump file if needed
+            // For now, we just print the bump file name
+            std::clog << "Bump file for " << mat_name << ": " << bump_file << '\n';
+
+            std::filesystem::path path = directory / bump_file;
+            std::clog << "Full bump path: " << path.string() << '\n';
+            std::dynamic_pointer_cast<texture_lambertian>(mat)->set_normal(path.string());
         }
     }
+
+    if (mat == nullptr) {
+        std::clog << "No valid material found for " << mat_name << ", using default lambertian.\n";
+        mat = make_shared<lambertian>(color(1, 0, 1));  // Default to a purple color
+    }
+
+    add_material(mat_name, mat);
 }
 
 void handleMaterialFile(const std::filesystem::path& path) {

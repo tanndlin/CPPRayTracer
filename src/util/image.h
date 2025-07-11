@@ -21,8 +21,40 @@ class image {
         }
     }
 
+    // Proper destructor
     ~image() {
-        stbi_image_free(data);
+        if (data) {
+            stbi_image_free(data);
+            data = nullptr;
+        }
+    }
+
+    // Delete copy constructor and assignment operator to prevent double-free
+    image(const image&) = delete;
+    image& operator=(const image&) = delete;
+
+    // Add move constructor and move assignment if needed
+    image(image&& other) noexcept : data(other.data), width(other.width), height(other.height), channels(other.channels) {
+        other.data = nullptr;
+    }
+
+    image& operator=(image&& other) noexcept {
+        if (this != &other) {
+            // Free existing data
+            if (data) {
+                stbi_image_free(data);
+            }
+
+            // Move data from other
+            data = other.data;
+            width = other.width;
+            height = other.height;
+            channels = other.channels;
+
+            // Clear other's data
+            other.data = nullptr;
+        }
+        return *this;
     }
 
     unsigned char* get_data() const {
