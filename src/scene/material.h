@@ -42,11 +42,18 @@ class texture_lambertian : public material {
     texture_lambertian(const std::string& texture_file) : texture(texture_file) {}
 
     bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
-        // For now, we just return a default color.
-        // In a real implementation, you would sample the texture based on rec.p.
-        attenuation = color(1.0, 1.0, 1.0);  // Default color
-        scattered = ray(rec.p, rec.normal);  // Scatter in the normal direction
-        return true;                         // Indicate that scattering occurred
+        auto scatter_direction = rec.normal + random_unit_vector();
+
+        // Catch degenerate scatter direction
+        if (scatter_direction.near_zero())
+            scatter_direction = rec.normal;
+
+        scattered = ray(rec.p, scatter_direction);
+
+        // Sample the texture at the UV coordinates
+        attenuation = texture.sample(rec.u, rec.v);
+
+        return true;
     }
 
    private:

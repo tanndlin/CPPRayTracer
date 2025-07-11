@@ -1,7 +1,6 @@
 #ifndef TRI_H
 #define TRI_H
 
-#include "../scene/material.h"
 #include "../util/utils.h"
 #include "hittable.h"
 
@@ -12,6 +11,7 @@ class triangle : public hittable {
     point3 c;
     point3 min;
     point3 max;
+    point3 uvs[3];  // Texture coordinates for a,b,c
 
     triangle(const point3& a, const point3& b, const point3& c, const std::string& mat_name) : a(a), b(b), c(c), mat_name(mat_name) {
         calc_bounds();
@@ -35,7 +35,6 @@ class triangle : public hittable {
         // Backface culling
         double determinant = -dot(r.direction(), normal);
         if (!backface_culling_disabled && determinant < 1e-6)
-            // if (determinant < 1e-6)
             return false;
 
         double invDet = 1 / determinant;
@@ -61,6 +60,11 @@ class triangle : public hittable {
         rec.set_face_normal(r, normal);
         rec.mat = get_material(mat_name);
 
+        // Calculate texture coordinates using barycentric coordinates
+        double w = 1.0 - u - v;
+        rec.u = w * uvs[0].x() + u * uvs[1].x() + v * uvs[2].x();
+        rec.v = w * uvs[0].y() + u * uvs[1].y() + v * uvs[2].y();
+
         return true;
     }
 
@@ -80,7 +84,7 @@ class triangle : public hittable {
         normal = cross(edgeAB, edgeAC);
     }
 
-    void set_material(std::string name) { mat_name = name; }
+    void set_material(const std::string& name) { mat_name = name; }
 
     void move_origin(const vec3& offset) override {
         a += offset;
@@ -111,14 +115,12 @@ class triangle : public hittable {
     }
 
    private:
-    // shared_ptr<material> mat;
     std::string mat_name;
     bounding_box bounds;
 
     point3 edgeAB;
     point3 edgeAC;
     point3 normal;
-    point3 uvs[3];
 
     bool backface_culling_disabled = false;  // Set to true to disable backface culling
 };

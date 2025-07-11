@@ -6,7 +6,8 @@
         "*.h": "cpp",
         "*.rws": "xml",
         "future": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "stdexcept": "cpp"
     },
     "restoreTerminals.terminals": [
         {

@@ -22,18 +22,18 @@ int main() {
     auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
     world.add(make_shared<sphere>(point3(0, -1002, 0), 1000, ground_material));
 
-    for (int i = 0; i < 10; i++) {
-        shared_ptr<mesh> cube = readFile("objs/cube2.obj");
-        cube->set_origin(point3((i - 5) * 1.5, 1, 0));
-        cube->rotate(i * 36, vec3(0, 1, 0));
-        cube->rotate(i * 36, vec3(0, 0, 1));
-        cube->scale(0.5);
-        world.add(cube);
-    }
+    // for (int i = 0; i < 10; i++) {
+    //     shared_ptr<mesh> cube = readFile("objs/cube2.obj");
+    //     cube->set_origin(point3((i - 5) * 1.5, 1, 0));
+    //     cube->rotate(i * 36, vec3(0, 1, 0));
+    //     cube->rotate(i * 36, vec3(0, 0, 1));
+    //     cube->scale(0.5);
+    //     world.add(cube);
+    // }
 
-    shared_ptr<mesh> chess = readFile("objs/Chess.obj");
+    shared_ptr<mesh> chess = readFile("objs/chess/Chess2.obj");
     chess->scale(2);
-    chess->set_origin(point3(0, -1, 0));
+    chess->set_origin(point3(0, -4, 0));
     world.add(chess);
 
     auto readFileTime = high_resolution_clock::now() - total_time;

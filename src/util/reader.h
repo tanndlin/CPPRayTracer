@@ -34,14 +34,10 @@ void handleVertexTexture(std::vector<point3>& uvs, const std::string& line) {
         throw std::runtime_error("Failed to parse texture vertex line: " + line);
     }
 
-    // For now, we just log the texture coordinates
-    std::clog << "Texture vertex: (" << u << ", " << v << ")\n";
     uvs.push_back(point3(u, v, 0));
 };
 
-void handleParseMaterial(std::ifstream& file, const std::string& mat_name) {
-    // This function can be expanded to handle more material properties if needed
-    // For now, we just print the material name
+void handleParseMaterial(std::ifstream& file, const std::string& mat_name, const std::filesystem::path& directory) {
     std::clog << "Parsing material: " << mat_name << '\n';
 
     /*
@@ -79,7 +75,10 @@ void handleParseMaterial(std::ifstream& file, const std::string& mat_name) {
             // Here you can load the texture file if needed
             // For now, we just print the texture file name
             std::clog << "Texture file for " << mat_name << ": " << texture_file << '\n';
-            add_material(mat_name, make_shared<texture_lambertian>(texture_file));
+
+            std::filesystem::path path = directory / texture_file;
+            std::clog << "Full texture path: " << path.string() << '\n';
+            add_material(mat_name, make_shared<texture_lambertian>(path.string()));
         }
     }
 }
@@ -94,7 +93,7 @@ void handleMaterialFile(const std::filesystem::path& path) {
     while (std::getline(file, line)) {
         // Process the material file line by line
         if (line.rfind("newmtl ", 0) == 0) {
-            handleParseMaterial(file, line.substr(7));
+            handleParseMaterial(file, line.substr(7), path.parent_path());
         }
         // You can add more processing for other material properties if needed
     }
