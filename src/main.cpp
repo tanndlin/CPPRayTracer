@@ -31,10 +31,10 @@ int main() {
     //     world.add(cube);
     // }
 
-    shared_ptr<mesh> chess = readFile("objs/chess/Chess2.obj");
-    chess->scale(2);
-    chess->set_origin(point3(0, -4, 0));
-    world.add(chess);
+    shared_ptr<mesh> f16 = readFile("objs/F16/F-16.obj");
+    f16->scale(.1);
+    f16->set_origin(point3(-4, -5, 0));
+    world.add(f16);
 
     auto readFileTime = high_resolution_clock::now() - total_time;
     std::clog << "Read file time: " << duration_cast<milliseconds>(readFileTime).count() << "ms\n";
@@ -45,7 +45,7 @@ int main() {
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1920;
-    cam.samples_per_pixel = 10;
+    cam.samples_per_pixel = 100;
     cam.max_depth = 10;
     cam.tile_size = 32;
 

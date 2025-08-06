@@ -5,9 +5,7 @@
         "*.json": "jsonc",
         "*.h": "cpp",
         "*.rws": "xml",
-        "future": "cpp",
-        "filesystem": "cpp",
-        "stdexcept": "cpp"
+        "memory": "cpp"
     },
     "restoreTerminals.terminals": [
         {
